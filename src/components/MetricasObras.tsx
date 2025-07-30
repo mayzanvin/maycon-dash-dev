@@ -11,278 +11,310 @@ const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas, selectedProject
     ? Math.round((metricas.marcosFisicosConcluidos / metricas.totalMarcosFisicos) * 100)
     : 0
 
+  // Cores da Roraima Energia
+  const coresRoraima = {
+    azul: '#0EA5E9',
+    laranja: '#FF6B35',
+    verde: '#10B981',
+    roxo: '#8B5CF6',
+    preto: '#000000',
+    cinza: '#374151',
+    cinzaClaro: '#6B7280'
+  }
+
   return (
-    <div style={{ marginBottom: '30px' }}>
-      <h2 style={{ 
-        fontSize: '20px', 
-        marginBottom: '20px', 
-        color: '#00d4ff',
-        fontWeight: '700',
-        textAlign: 'center',
-        textShadow: '0 0 20px rgba(0, 212, 255, 0.5)',
-        letterSpacing: '1px'
+    <div style={{ 
+      display: 'grid', 
+      gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+      gap: '20px',
+      padding: '0'
+    }}>
+      
+      {/* Total de Obras */}
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '12px',
+        padding: '24px',
+        border: '2px solid #e2e8f0',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+        transition: 'all 0.3s ease',
+        cursor: 'default'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'translateY(-2px)'
+        e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)'
+        e.currentTarget.style.borderColor = coresRoraima.azul
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'translateY(0)'
+        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)'
+        e.currentTarget.style.borderColor = '#e2e8f0'
       }}>
-        ⚡ MÉTRICAS GERAIS - {selectedProject === 'all' ? 'TODAS AS OBRAS' : 'OBRA SELECIONADA'}
-      </h2>
-
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
-        gap: '20px',
-        padding: '0 10px'
-      }}>
-        
-        {/* Total de Obras - FORÇANDO TEMA CYBER */}
         <div style={{
-          background: 'linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 50%, #0a0e1a 100%) !important',
-          borderRadius: '12px',
-          padding: '24px',
-          border: '2px solid #FF6B35',
-          boxShadow: `
-            0 0 20px rgba(255, 107, 53, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1)
-          `,
-          position: 'relative',
-          overflow: 'hidden',
-          transition: 'all 0.3s ease'
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          marginBottom: '16px'
         }}>
-          {/* Borda animada */}
           <div style={{
-            position: 'absolute',
-            top: '0',
-            left: '0',
-            right: '0',
-            height: '2px',
-            background: 'linear-gradient(90deg, transparent, #FF6B35, transparent)',
-            animation: 'borderGlow 2s ease-in-out infinite alternate'
-          }} />
-          
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '40px',
+            height: '40px',
+            borderRadius: '10px',
+            backgroundColor: '#eff6ff',
+            border: `2px solid ${coresRoraima.azul}`
+          }}>
             <Building2 style={{ 
-              width: '28px', 
-              height: '28px', 
-              color: '#00d4ff',
-              filter: 'drop-shadow(0 0 8px rgba(0, 212, 255, 0.6))'
+              width: '20px', 
+              height: '20px', 
+              color: coresRoraima.azul
             }} />
-            <span style={{ 
-              marginLeft: '12px', 
-              fontWeight: '600', 
-              color: '#ffffff !important',
-              fontSize: '16px'
-            }}>
-              Total de Obras
-            </span>
           </div>
-          
-          <div style={{ 
-            fontSize: '36px', 
-            fontWeight: 'bold', 
-            color: '#00d4ff !important',
-            textShadow: '0 0 20px rgba(0, 212, 255, 0.8)',
-            marginBottom: '8px'
+          <h3 style={{
+            color: coresRoraima.preto,
+            fontSize: '16px',
+            fontWeight: '600',
+            margin: 0,
+            letterSpacing: '0.3px'
           }}>
-            {metricas.totalObras}
-          </div>
-          
-          <div style={{ 
-            fontSize: '13px', 
-            color: '#94a3b8 !important',
-            background: 'rgba(0, 212, 255, 0.1)',
-            padding: '4px 8px',
-            borderRadius: '4px',
-            border: '1px solid rgba(0, 212, 255, 0.3)'
-          }}>
-            {metricas.obrasComExecucao} com dados de execução
-          </div>
+            Total de Obras
+          </h3>
         </div>
+        
+        <div style={{ 
+          fontSize: '32px', 
+          fontWeight: '700', 
+          color: coresRoraima.azul,
+          marginBottom: '8px',
+          lineHeight: '1.1'
+        }}>
+          {metricas.totalObras}
+        </div>
+        
+        <div style={{ 
+          fontSize: '13px', 
+          color: coresRoraima.cinzaClaro,
+          fontWeight: '500'
+        }}>
+          {metricas.obrasComExecucao} com dados de execução
+        </div>
+      </div>
 
-        {/* Progresso Geral Médio */}
+      {/* Progresso Geral Médio */}
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '12px',
+        padding: '24px',
+        border: '2px solid #e2e8f0',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+        transition: 'all 0.3s ease',
+        cursor: 'default'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'translateY(-2px)'
+        e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)'
+        e.currentTarget.style.borderColor = coresRoraima.azul
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'translateY(0)'
+        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)'
+        e.currentTarget.style.borderColor = '#e2e8f0'
+      }}>
         <div style={{
-          background: 'linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 50%, #0a0e1a 100%)',
-          borderRadius: '12px',
-          padding: '24px',
-          border: '2px solid #FF6B35',
-          boxShadow: `
-            0 0 20px rgba(255, 107, 53, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1)
-          `,
-          position: 'relative',
-          overflow: 'hidden',
-          transition: 'all 0.3s ease'
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          marginBottom: '16px'
         }}>
           <div style={{
-            position: 'absolute',
-            top: '0',
-            left: '0',
-            right: '0',
-            height: '2px',
-            background: 'linear-gradient(90deg, transparent, #FF6B35, transparent)',
-            animation: 'borderGlow 2s ease-in-out infinite alternate'
-          }} />
-          
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '40px',
+            height: '40px',
+            borderRadius: '10px',
+            backgroundColor: '#eff6ff',
+            border: `2px solid ${coresRoraima.azul}`
+          }}>
             <TrendingUp style={{ 
-              width: '28px', 
-              height: '28px', 
-              color: '#3b82f6',
-              filter: 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.6))'
+              width: '20px', 
+              height: '20px', 
+              color: coresRoraima.azul
             }} />
-            <span style={{ 
-              marginLeft: '12px', 
-              fontWeight: '600', 
-              color: '#ffffff',
-              fontSize: '16px'
-            }}>
-              Progresso Geral Médio
-            </span>
           </div>
-          
-          <div style={{ 
-            fontSize: '36px', 
-            fontWeight: 'bold', 
-            color: '#3b82f6',
-            textShadow: '0 0 20px rgba(59, 130, 246, 0.8)',
-            marginBottom: '8px'
+          <h3 style={{
+            color: coresRoraima.preto,
+            fontSize: '16px',
+            fontWeight: '600',
+            margin: 0,
+            letterSpacing: '0.3px'
           }}>
-            {metricas.mediaaProgressoGeral}%
-          </div>
-          
-          <div style={{ 
-            fontSize: '13px', 
-            color: '#94a3b8',
-            background: 'rgba(59, 130, 246, 0.1)',
-            padding: '4px 8px',
-            borderRadius: '4px',
-            border: '1px solid rgba(59, 130, 246, 0.3)'
-          }}>
-            Média de todas as tarefas
-          </div>
+            Progresso Geral Médio
+          </h3>
         </div>
+        
+        <div style={{ 
+          fontSize: '32px', 
+          fontWeight: '700', 
+          color: coresRoraima.azul,
+          marginBottom: '8px',
+          lineHeight: '1.1'
+        }}>
+          {metricas.mediaaProgressoGeral}%
+        </div>
+        
+        <div style={{ 
+          fontSize: '13px', 
+          color: coresRoraima.cinzaClaro,
+          fontWeight: '500'
+        }}>
+          Média de todas as tarefas
+        </div>
+      </div>
 
-        {/* Avanço Físico Médio */}
+      {/* Avanço Físico Médio */}
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '12px',
+        padding: '24px',
+        border: '2px solid #e2e8f0',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+        transition: 'all 0.3s ease',
+        cursor: 'default'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'translateY(-2px)'
+        e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)'
+        e.currentTarget.style.borderColor = coresRoraima.verde
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'translateY(0)'
+        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)'
+        e.currentTarget.style.borderColor = '#e2e8f0'
+      }}>
         <div style={{
-          background: 'linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 50%, #0a0e1a 100%)',
-          borderRadius: '12px',
-          padding: '24px',
-          border: '2px solid #FF6B35',
-          boxShadow: `
-            0 0 20px rgba(255, 107, 53, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1)
-          `,
-          position: 'relative',
-          overflow: 'hidden',
-          transition: 'all 0.3s ease'
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          marginBottom: '16px'
         }}>
           <div style={{
-            position: 'absolute',
-            top: '0',
-            left: '0',
-            right: '0',
-            height: '2px',
-            background: 'linear-gradient(90deg, transparent, #FF6B35, transparent)',
-            animation: 'borderGlow 2s ease-in-out infinite alternate'
-          }} />
-          
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '40px',
+            height: '40px',
+            borderRadius: '10px',
+            backgroundColor: '#f0fdf4',
+            border: `2px solid ${coresRoraima.verde}`
+          }}>
             <Target style={{ 
-              width: '28px', 
-              height: '28px', 
-              color: '#00ff88',
-              filter: 'drop-shadow(0 0 8px rgba(0, 255, 136, 0.6))'
+              width: '20px', 
+              height: '20px', 
+              color: coresRoraima.verde
             }} />
-            <span style={{ 
-              marginLeft: '12px', 
-              fontWeight: '600', 
-              color: '#ffffff',
-              fontSize: '16px'
-            }}>
-              Avanço Físico Médio
-            </span>
           </div>
-          
-          <div style={{ 
-            fontSize: '36px', 
-            fontWeight: 'bold', 
-            color: '#00ff88',
-            textShadow: '0 0 20px rgba(0, 255, 136, 0.8)',
-            marginBottom: '8px'
+          <h3 style={{
+            color: coresRoraima.preto,
+            fontSize: '16px',
+            fontWeight: '600',
+            margin: 0,
+            letterSpacing: '0.3px'
           }}>
-            {metricas.mediaAvancaoFisico}%
-          </div>
-          
-          <div style={{ 
-            fontSize: '13px', 
-            color: '#94a3b8',
-            background: 'rgba(0, 255, 136, 0.1)',
-            padding: '4px 8px',
-            borderRadius: '4px',
-            border: '1px solid rgba(0, 255, 136, 0.3)'
-          }}>
-            Baseado em marcos físicos
-          </div>
+            Avanço Físico Médio
+          </h3>
         </div>
+        
+        <div style={{ 
+          fontSize: '32px', 
+          fontWeight: '700', 
+          color: coresRoraima.verde,
+          marginBottom: '8px',
+          lineHeight: '1.1'
+        }}>
+          {metricas.mediaAvancaoFisico}%
+        </div>
+        
+        <div style={{ 
+          fontSize: '13px', 
+          color: coresRoraima.cinzaClaro,
+          fontWeight: '500'
+        }}>
+          Baseado em marcos físicos
+        </div>
+      </div>
 
-        {/* Marcos Físicos */}
+      {/* Marcos Físicos */}
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '12px',
+        padding: '24px',
+        border: '2px solid #e2e8f0',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+        transition: 'all 0.3s ease',
+        cursor: 'default'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'translateY(-2px)'
+        e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)'
+        e.currentTarget.style.borderColor = coresRoraima.roxo
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'translateY(0)'
+        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)'
+        e.currentTarget.style.borderColor = '#e2e8f0'
+      }}>
         <div style={{
-          background: 'linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 50%, #0a0e1a 100%)',
-          borderRadius: '12px',
-          padding: '24px',
-          border: '2px solid #FF6B35',
-          boxShadow: `
-            0 0 20px rgba(255, 107, 53, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1)
-          `,
-          position: 'relative',
-          overflow: 'hidden',
-          transition: 'all 0.3s ease'
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          marginBottom: '16px'
         }}>
           <div style={{
-            position: 'absolute',
-            top: '0',
-            left: '0',
-            right: '0',
-            height: '2px',
-            background: 'linear-gradient(90deg, transparent, #FF6B35, transparent)',
-            animation: 'borderGlow 2s ease-in-out infinite alternate'
-          }} />
-          
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '40px',
+            height: '40px',
+            borderRadius: '10px',
+            backgroundColor: '#faf5ff',
+            border: `2px solid ${coresRoraima.roxo}`
+          }}>
             <CheckCircle2 style={{ 
-              width: '28px', 
-              height: '28px', 
-              color: '#8b5cf6',
-              filter: 'drop-shadow(0 0 8px rgba(139, 92, 246, 0.6))'
+              width: '20px', 
+              height: '20px', 
+              color: coresRoraima.roxo
             }} />
-            <span style={{ 
-              marginLeft: '12px', 
-              fontWeight: '600', 
-              color: '#ffffff',
-              fontSize: '16px'
-            }}>
-              Marcos Físicos
-            </span>
           </div>
-          
-          <div style={{ 
-            fontSize: '36px', 
-            fontWeight: 'bold', 
-            color: '#8b5cf6',
-            textShadow: '0 0 20px rgba(139, 92, 246, 0.8)',
-            marginBottom: '8px'
+          <h3 style={{
+            color: coresRoraima.preto,
+            fontSize: '16px',
+            fontWeight: '600',
+            margin: 0,
+            letterSpacing: '0.3px'
           }}>
-            {metricas.marcosFisicosConcluidos}/{metricas.totalMarcosFisicos}
-          </div>
-          
-          <div style={{ 
-            fontSize: '13px', 
-            color: '#94a3b8',
-            background: 'rgba(139, 92, 246, 0.1)',
-            padding: '4px 8px',
-            borderRadius: '4px',
-            border: '1px solid rgba(139, 92, 246, 0.3)'
-          }}>
-            {avancaoFisicoPercentual}% concluídos
-          </div>
+            Marcos Físicos
+          </h3>
+        </div>
+        
+        <div style={{ 
+          fontSize: '32px', 
+          fontWeight: '700', 
+          color: coresRoraima.roxo,
+          marginBottom: '8px',
+          lineHeight: '1.1'
+        }}>
+          {metricas.marcosFisicosConcluidos}/{metricas.totalMarcosFisicos}
+        </div>
+        
+        <div style={{ 
+          fontSize: '13px', 
+          color: coresRoraima.cinzaClaro,
+          fontWeight: '500'
+        }}>
+          {avancaoFisicoPercentual}% concluídos
         </div>
       </div>
     </div>
