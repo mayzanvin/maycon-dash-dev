@@ -1,4 +1,5 @@
 import { useState } from 'react'
+console.log ("🔥 DASHBOARD UNIFICADO CARREGADO!")
 import { DashboardUnificado as DashboardUnificadoType, MetricasGerais, ObraUnificada } from '@/types/obra-unificada'
 import MetricasObras from './MetricasObras'
 import ListaObrasUnificadas from './ListaObrasUnificadas'
