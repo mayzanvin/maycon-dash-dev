@@ -1,0 +1,12 @@
+{
+  "ts-node": {
+    "esm": true,
+    "allowJs": true,
+    "compilerOptions": {
+      "module": "ESNext",
+      "moduleResolution": "bundler",
+      "allowSyntheticDefaultImports": true,
+      "esModuleInterop": true
+    }
+  }
+}
