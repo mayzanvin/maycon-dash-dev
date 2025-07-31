@@ -1,5 +1,3 @@
-// Adicione esta linha no início do return do MetricasObras.tsx
-<div style={{ color: 'red', fontSize: '20px', textAlign: 'center' }}>🔥 TESTE - MetricasObras.tsx carregado!</div>
 import { MetricasGerais } from '@/types/obra-unificada'
 
 interface MetricasObrasProps {
@@ -22,223 +20,185 @@ const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas }) => {
     cinzaClaro: '#6B7280'
   }
 
-  const cardStyle = {
-    backgroundColor: '#ffffff',
-    borderRadius: '12px',
-    padding: '24px',
-    border: '2px solid #e2e8f0',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-    transition: 'all 0.3s ease',
-    cursor: 'default',
-    textAlign: 'center' as const,
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    justifyContent: 'center'
-  }
-
-  const iconContainerStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '48px',
-    height: '48px',
-    borderRadius: '8px',
-    marginBottom: '16px',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-  }
-
-  const titleStyle = {
-    color: coresRoraima.preto,
-    fontSize: '16px',
-    fontWeight: '600',
-    margin: '0 0 16px 0',
-    letterSpacing: '0.3px',
-    fontFamily: 'Inter, sans-serif',
-    textAlign: 'center' as const,
-    width: '100%'
-  }
-
-  const valueStyle = {
-    fontSize: '32px',
-    fontWeight: '700',
-    marginBottom: '8px',
-    lineHeight: '1.1',
-    fontFamily: 'Inter, sans-serif'
-  }
-
-  const descriptionStyle = {
-    fontSize: '13px',
-    color: coresRoraima.cinzaClaro,
-    fontWeight: '500',
-    fontFamily: 'Inter, sans-serif',
-    textAlign: 'center' as const
-  }
+  const CardComponent = ({ 
+    icon, 
+    title, 
+    value, 
+    description, 
+    color 
+  }: { 
+    icon: React.ReactNode; 
+    title: string; 
+    value: string | number; 
+    description: string; 
+    color: string 
+  }) => (
+    <div style={{
+      backgroundColor: 'white',
+      borderRadius: '16px',
+      padding: '32px',
+      border: '3px solid #e2e8f0',
+      boxShadow: '0 4px 16px rgba(0, 0, 0, 0.12)',
+      transition: 'all 0.3s ease',
+      cursor: 'default',
+      textAlign: 'center',
+      minHeight: '200px',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Background gradient */}
+      <div style={{
+        position: 'absolute',
+        top: '0',
+        left: '0',
+        right: '0',
+        height: '4px',
+        background: `linear-gradient(90deg, ${color}, ${color}80, ${color})`
+      }} />
+      
+      {/* Icon */}
+      <div style={{
+        width: '80px',
+        height: '80px',
+        borderRadius: '16px',
+        backgroundColor: color + '10',
+        border: `3px solid ${color}`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: '24px',
+        boxShadow: `0 6px 12px ${color}25`
+      }}>
+        {icon}
+      </div>
+      
+      {/* Title */}
+      <div style={{
+        color: '#000000',
+        fontSize: '20px',
+        fontWeight: '800',
+        marginBottom: '20px',
+        letterSpacing: '0.8px',
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+        textAlign: 'center',
+        lineHeight: '1.2',
+        textTransform: 'uppercase'
+      }}>
+        {title}
+      </div>
+      
+      {/* Value */}
+      <div style={{
+        fontSize: '48px',
+        fontWeight: '900',
+        color: color,
+        marginBottom: '12px',
+        lineHeight: '1',
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+        textShadow: `0 2px 4px ${color}40`
+      }}>
+        {value}
+      </div>
+      
+      {/* Description */}
+      <div style={{
+        fontSize: '15px',
+        color: '#6B7280',
+        fontWeight: '600',
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+        textAlign: 'center',
+        lineHeight: '1.4',
+        maxWidth: '180px'
+      }}>
+        {description}
+      </div>
+    </div>
+  )
 
   return (
-    <div style={{ 
-      display: 'grid', 
-      gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
-      gap: '20px',
-      padding: '0',
-      fontFamily: 'Inter, sans-serif'
-    }}>
-      
-      {/* Total de Obras */}
-      <div style={cardStyle}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-2px)'
-        e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)'
-        e.currentTarget.style.borderColor = coresRoraima.azul
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'translateY(0)'
-        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)'
-        e.currentTarget.style.borderColor = '#e2e8f0'
+    <div>
+      {/* Título da seção centralizado */}
+      <div style={{
+        textAlign: 'center',
+        marginBottom: '40px',
+        fontSize: '28px',
+        fontWeight: '900',
+        color: '#FF6B35',
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+        textTransform: 'uppercase',
+        letterSpacing: '2px',
+        textShadow: '0 2px 4px rgba(255, 107, 53, 0.3)'
       }}>
-        <div style={{
-          ...iconContainerStyle,
-          backgroundColor: '#f8fafc',
-          border: `2px solid ${coresRoraima.azul}`
-        }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.azul} strokeWidth="2">
-            <path d="M3 21h18"/>
-            <path d="M5 21V7l8-4v18"/>
-            <path d="M19 21V11l-6-4"/>
-          </svg>
-        </div>
-        
-        <h3 style={titleStyle}>
-          Total de Obras
-        </h3>
-        
-        <div style={{ 
-          ...valueStyle,
-          color: coresRoraima.azul
-        }}>
-          {metricas.totalObras}
-        </div>
-        
-        <div style={descriptionStyle}>
-          {metricas.obrasComExecucao} com dados de execução
-        </div>
+        🚀 MÉTRICAS CORPORATIVAS - RORAIMA ENERGIA
       </div>
 
-      {/* Progresso Geral Médio */}
-      <div style={cardStyle}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-2px)'
-        e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)'
-        e.currentTarget.style.borderColor = coresRoraima.azul
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'translateY(0)'
-        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)'
-        e.currentTarget.style.borderColor = '#e2e8f0'
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+        gap: '32px',
+        padding: '0',
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif'
       }}>
-        <div style={{
-          ...iconContainerStyle,
-          backgroundColor: '#f8fafc',
-          border: `2px solid ${coresRoraima.azul}`
-        }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.azul} strokeWidth="2">
-            <path d="M3 3v18h18"/>
-            <path d="M7 16l4-4 4 4 6-6"/>
-          </svg>
-        </div>
         
-        <h3 style={titleStyle}>
-          Progresso Geral Médio
-        </h3>
-        
-        <div style={{ 
-          ...valueStyle,
-          color: coresRoraima.azul
-        }}>
-          {metricas.mediaaProgressoGeral}%
-        </div>
-        
-        <div style={descriptionStyle}>
-          Média de todas as tarefas
-        </div>
-      </div>
+        <CardComponent
+          icon={
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.azul} strokeWidth="3">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <rect x="7" y="7" width="3" height="9"/>
+              <rect x="14" y="7" width="3" height="5"/>
+            </svg>
+          }
+          title="Total de Obras"
+          value={metricas.totalObras}
+          description={`${metricas.obrasComExecucao} com dados de execução`}
+          color={coresRoraima.azul}
+        />
 
-      {/* Avanço Físico Médio */}
-      <div style={cardStyle}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-2px)'
-        e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)'
-        e.currentTarget.style.borderColor = coresRoraima.verde
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'translateY(0)'
-        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)'
-        e.currentTarget.style.borderColor = '#e2e8f0'
-      }}>
-        <div style={{
-          ...iconContainerStyle,
-          backgroundColor: '#f0fdf4',
-          border: `2px solid ${coresRoraima.verde}`
-        }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.verde} strokeWidth="2">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M12 6v6l4 4"/>
-          </svg>
-        </div>
-        
-        <h3 style={titleStyle}>
-          Avanço Físico Médio
-        </h3>
-        
-        <div style={{ 
-          ...valueStyle,
-          color: coresRoraima.verde
-        }}>
-          {metricas.mediaAvancaoFisico}%
-        </div>
-        
-        <div style={descriptionStyle}>
-          Baseado em marcos físicos
-        </div>
-      </div>
+        <CardComponent
+          icon={
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.azul} strokeWidth="3">
+              <path d="M3 3v18h18"/>
+              <path d="M7 16l4-4 4 4 6-6"/>
+              <circle cx="11" cy="11" r="2"/>
+            </svg>
+          }
+          title="Progresso Geral"
+          value={`${metricas.mediaaProgressoGeral}%`}
+          description="Média de todas as tarefas"
+          color={coresRoraima.azul}
+        />
 
-      {/* Marcos Físicos */}
-      <div style={cardStyle}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-2px)'
-        e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)'
-        e.currentTarget.style.borderColor = coresRoraima.roxo
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'translateY(0)'
-        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)'
-        e.currentTarget.style.borderColor = '#e2e8f0'
-      }}>
-        <div style={{
-          ...iconContainerStyle,
-          backgroundColor: '#faf5ff',
-          border: `2px solid ${coresRoraima.roxo}`
-        }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.roxo} strokeWidth="2">
-            <path d="M9 12l2 2 4-4"/>
-            <circle cx="12" cy="12" r="10"/>
-          </svg>
-        </div>
-        
-        <h3 style={titleStyle}>
-          Marcos Físicos
-        </h3>
-        
-        <div style={{ 
-          ...valueStyle,
-          color: coresRoraima.roxo
-        }}>
-          {metricas.marcosFisicosConcluidos}/{metricas.totalMarcosFisicos}
-        </div>
-        
-        <div style={descriptionStyle}>
-          {avancaoFisicoPercentual}% concluídos
-        </div>
+        <CardComponent
+          icon={
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.verde} strokeWidth="3">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 4"/>
+              <circle cx="12" cy="12" r="2"/>
+            </svg>
+          }
+          title="Avanço Físico"
+          value={`${metricas.mediaAvancaoFisico}%`}
+          description="Baseado em marcos físicos"
+          color={coresRoraima.verde}
+        />
+
+        <CardComponent
+          icon={
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.roxo} strokeWidth="3">
+              <path d="M9 12l2 2 4-4"/>
+              <circle cx="12" cy="12" r="10"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          }
+          title="Marcos Físicos"
+          value={`${metricas.marcosFisicosConcluidos}/${metricas.totalMarcosFisicos}`}
+          description={`${avancaoFisicoPercentual}% concluídos`}
+          color={coresRoraima.roxo}
+        />
       </div>
     </div>
   )
