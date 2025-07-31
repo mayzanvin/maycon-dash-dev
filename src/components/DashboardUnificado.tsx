@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 console.log ("🔥 DASHBOARD UNIFICADO CARREGADO!")
 import { DashboardUnificado as DashboardUnificadoType, MetricasGerais, ObraUnificada } from '@/types/obra-unificada'
 import MetricasObras from './MetricasObras'
@@ -14,39 +14,17 @@ interface DashboardUnificadoProps {
 const DashboardUnificado: React.FC<DashboardUnificadoProps> = ({ data, dataUltimaAtualizacao }) => {
   const [selectedProject, setSelectedProject] = useState<string>('all')
   const [obraSelecionadaModal, setObraSelecionadaModal] = useState<ObraUnificada | null>(null)
-  const [currentTime, setCurrentTime] = useState<string>('')
 
   // Cores da Roraima Energia
   const coresRoraima = {
-    laranja: '#FF6B35',      // Laranja principal
-    azul: '#0EA5E9',         // Azul principal  
-    azulEscuro: '#0369A1',   // Azul mais escuro
-    cinzaTexto: '#374151',   // Cinza para textos
-    cinzaClaro: '#F3F4F6',   // Cinza muito claro para fundos
-    branco: '#FFFFFF',       // Branco puro
-    preto: '#000000'         // Preto para títulos
+    laranja: '#FF6B35',
+    azul: '#0EA5E9',
+    azulEscuro: '#0369A1',
+    cinzaTexto: '#374151',
+    cinzaClaro: '#F3F4F6',
+    branco: '#FFFFFF',
+    preto: '#000000'
   }
-
-  // Função para atualizar timestamp em tempo real
-  useEffect(() => {
-    const updateTimestamp = () => {
-      const now = new Date()
-      const options: Intl.DateTimeFormatOptions = {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'America/Boa_Vista'
-      }
-      const timestamp = now.toLocaleString('pt-BR', options)
-      setCurrentTime(`Sistema: ${timestamp}`)
-    }
-
-    updateTimestamp()
-    const interval = setInterval(updateTimestamp, 60000)
-    return () => clearInterval(interval)
-  }, [])
 
   // Calcular métricas gerais
   const obras = Object.values(data)
@@ -91,8 +69,11 @@ const DashboardUnificado: React.FC<DashboardUnificadoProps> = ({ data, dataUltim
       margin: '0',
       width: '100vw',
       boxSizing: 'border-box',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     }}>
+      {/* Importar fonte Inter */}
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+      
       {/* Container principal */}
       <div style={{ 
         maxWidth: '100%', 
@@ -101,7 +82,7 @@ const DashboardUnificado: React.FC<DashboardUnificadoProps> = ({ data, dataUltim
         boxSizing: 'border-box'
       }}>
         
-        {/* Header corporativo harmonizado */}
+        {/* Header corporativo */}
         <header style={{ 
           marginBottom: '40px',
           textAlign: 'center',
@@ -113,73 +94,35 @@ const DashboardUnificado: React.FC<DashboardUnificadoProps> = ({ data, dataUltim
           border: '1px solid #e2e8f0'
         }}>
           
-          {/* Linha superior: Badge + Timestamps - CORES RORAIMA */}
+          {/* Badge SDAT unificado com contorno azul */}
           <div style={{
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            gap: '16px',
             marginBottom: '24px',
             position: 'relative',
-            zIndex: 2,
-            flexWrap: 'wrap'
+            zIndex: 2
           }}>
-            {/* Badge da empresa - AZUL RORAIMA */}
             <div style={{
-              background: `linear-gradient(135deg, ${coresRoraima.azul} 0%, ${coresRoraima.azulEscuro} 100%)`,
-              color: coresRoraima.branco,
-              padding: '10px 24px',
+              border: `2px solid ${coresRoraima.azul}`,
+              backgroundColor: 'transparent',
+              color: coresRoraima.azul,
+              padding: '12px 32px',
               borderRadius: '25px',
-              fontSize: '13px',
-              fontWeight: '700',
-              letterSpacing: '1.2px',
-              boxShadow: `0 2px 8px rgba(14, 165, 233, 0.3)`
-            }}>
-              RORAIMA ENERGIA
-            </div>
-            
-            {/* Data da Planilha - AZUL RORAIMA */}
-            {dataUltimaAtualizacao && (
-              <div style={{
-                background: '#eff6ff',
-                border: `1px solid ${coresRoraima.azul}`,
-                color: coresRoraima.azul,
-                padding: '6px 12px',
-                borderRadius: '15px',
-                fontSize: '11px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.azul} strokeWidth="2">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                  <line x1="16" y1="2" x2="16" y2="6"/>
-                  <line x1="8" y1="2" x2="8" y2="6"/>
-                  <line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
-                Dados carregados: {dataUltimaAtualizacao}
-              </div>
-            )}
-
-            {/* Timestamp Sistema - LARANJA RORAIMA */}
-            <div style={{
-              background: '#fff7ed',
-              border: `1px solid ${coresRoraima.laranja}`,
-              color: coresRoraima.laranja,
-              padding: '6px 12px',
-              borderRadius: '15px',
-              fontSize: '11px',
+              fontSize: '14px',
               fontWeight: '600',
+              letterSpacing: '0.5px',
               display: 'flex',
               alignItems: 'center',
-              gap: '4px'
+              gap: '8px',
+              boxShadow: `0 0 0 1px ${coresRoraima.azul}20`,
+              fontFamily: 'Inter, sans-serif'
             }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.laranja} strokeWidth="2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.azul} strokeWidth="2">
                 <circle cx="12" cy="12" r="10"/>
                 <polyline points="12,6 12,12 16,14"/>
               </svg>
-              {currentTime}
+              RORAIMA ENERGIA - SDAT: {dataUltimaAtualizacao || 'Aguardando dados do arquivo'}
             </div>
           </div>
           
@@ -193,7 +136,7 @@ const DashboardUnificado: React.FC<DashboardUnificadoProps> = ({ data, dataUltim
             borderRadius: '1px'
           }} />
           
-          {/* Hierarquia do título - PRETO */}
+          {/* Hierarquia do título */}
           <div>
             {/* Subtítulo discreto */}
             <div style={{
@@ -202,7 +145,8 @@ const DashboardUnificado: React.FC<DashboardUnificadoProps> = ({ data, dataUltim
               fontWeight: '500',
               letterSpacing: '2px',
               marginBottom: '8px',
-              textTransform: 'uppercase'
+              textTransform: 'uppercase',
+              fontFamily: 'Inter, sans-serif'
             }}>
               Dashboard
             </div>
@@ -214,7 +158,8 @@ const DashboardUnificado: React.FC<DashboardUnificadoProps> = ({ data, dataUltim
               color: coresRoraima.preto,
               marginBottom: '16px',
               letterSpacing: '1.5px',
-              lineHeight: '1.1'
+              lineHeight: '1.1',
+              fontFamily: 'Inter, sans-serif'
             }}>
               CONTROLE DE OBRAS
             </h1>
@@ -230,14 +175,15 @@ const DashboardUnificado: React.FC<DashboardUnificadoProps> = ({ data, dataUltim
               display: 'inline-block',
               border: '1px solid #e5e7eb',
               maxWidth: '600px',
-              lineHeight: '1.4'
+              lineHeight: '1.4',
+              fontFamily: 'Inter, sans-serif'
             }}>
               Visualização unificada: Fiscalização (F) + Execução (E) com avanço físico real
             </p>
           </div>
         </header>
 
-        {/* Seletor de Projeto - FUNDO BRANCO, TÍTULO PRETO */}
+        {/* Seletor de Projeto */}
         <div style={{ 
           marginBottom: '30px',
           display: 'flex',
@@ -258,8 +204,9 @@ const DashboardUnificado: React.FC<DashboardUnificadoProps> = ({ data, dataUltim
               gap: '8px',
               marginBottom: '12px', 
               fontWeight: '600', 
-              color: coresRoraima.preto, // TÍTULO PRETO
-              fontSize: '16px'
+              color: coresRoraima.preto,
+              fontSize: '16px',
+              fontFamily: 'Inter, sans-serif'
             }}>
               <svg 
                 width="16" 
@@ -287,7 +234,8 @@ const DashboardUnificado: React.FC<DashboardUnificadoProps> = ({ data, dataUltim
                 fontWeight: '500',
                 cursor: 'pointer',
                 outline: 'none',
-                transition: 'all 0.3s ease'
+                transition: 'all 0.3s ease',
+                fontFamily: 'Inter, sans-serif'
               }}
               onFocus={(e) => {
                 e.target.style.borderColor = coresRoraima.laranja
@@ -308,45 +256,49 @@ const DashboardUnificado: React.FC<DashboardUnificadoProps> = ({ data, dataUltim
           </div>
         </div>
 
-        {/* Seção de Métricas - TÍTULO PRETO */}
+        {/* Seção de Métricas com TÍTULO RESTAURADO */}
         <div style={{ 
           marginBottom: '40px',
           backgroundColor: coresRoraima.branco,
           padding: '20px',
           borderRadius: '12px',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+          border: '1px solid #e2e8f0'
         }}>
           <h2 style={{
             fontSize: '24px',
             fontWeight: '600',
             marginBottom: '20px',
-            color: coresRoraima.preto, // TÍTULO PRETO
+            color: coresRoraima.preto,
             borderBottom: `3px solid ${coresRoraima.laranja}`,
             paddingBottom: '8px',
-            display: 'inline-block'
+            display: 'inline-block',
+            fontFamily: 'Inter, sans-serif'
           }}>
             ⚡ MÉTRICAS GERAIS - TODAS AS OBRAS
           </h2>
           
-          <MetricasObras metricas={metricas} selectedProject={selectedProject} />
+          <MetricasObras metricas={metricas} />
         </div>
 
-        {/* Seção de Análise Visual - TÍTULO PRETO */}
+        {/* Seção de Análise Visual com TÍTULO RESTAURADO */}
         <div style={{ 
           marginBottom: '40px',
           backgroundColor: coresRoraima.branco,
           padding: '20px',
           borderRadius: '12px',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+          border: '1px solid #e2e8f0'
         }}>
           <h2 style={{
             fontSize: '24px',
             fontWeight: '600',
             marginBottom: '20px',
-            color: coresRoraima.preto, // TÍTULO PRETO
+            color: coresRoraima.preto,
             borderBottom: `3px solid ${coresRoraima.azul}`,
             paddingBottom: '8px',
-            display: 'inline-block'
+            display: 'inline-block',
+            fontFamily: 'Inter, sans-serif'
           }}>
             📊 ANÁLISE VISUAL
           </h2>

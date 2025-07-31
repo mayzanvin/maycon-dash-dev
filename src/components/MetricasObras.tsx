@@ -1,12 +1,12 @@
+// Adicione esta linha no início do return do MetricasObras.tsx
+<div style={{ color: 'red', fontSize: '20px', textAlign: 'center' }}>🔥 TESTE - MetricasObras.tsx carregado!</div>
 import { MetricasGerais } from '@/types/obra-unificada'
-import { Building2, TrendingUp, Target, CheckCircle2 } from 'lucide-react'
 
 interface MetricasObrasProps {
   metricas: MetricasGerais
-  selectedProject: string
 }
 
-const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas, selectedProject }) => {
+const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas }) => {
   const avancaoFisicoPercentual = metricas.totalMarcosFisicos > 0 
     ? Math.round((metricas.marcosFisicosConcluidos / metricas.totalMarcosFisicos) * 100)
     : 0
@@ -22,24 +22,70 @@ const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas, selectedProject
     cinzaClaro: '#6B7280'
   }
 
+  const cardStyle = {
+    backgroundColor: '#ffffff',
+    borderRadius: '12px',
+    padding: '24px',
+    border: '2px solid #e2e8f0',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+    transition: 'all 0.3s ease',
+    cursor: 'default',
+    textAlign: 'center' as const,
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    justifyContent: 'center'
+  }
+
+  const iconContainerStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '48px',
+    height: '48px',
+    borderRadius: '8px',
+    marginBottom: '16px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+  }
+
+  const titleStyle = {
+    color: coresRoraima.preto,
+    fontSize: '16px',
+    fontWeight: '600',
+    margin: '0 0 16px 0',
+    letterSpacing: '0.3px',
+    fontFamily: 'Inter, sans-serif',
+    textAlign: 'center' as const,
+    width: '100%'
+  }
+
+  const valueStyle = {
+    fontSize: '32px',
+    fontWeight: '700',
+    marginBottom: '8px',
+    lineHeight: '1.1',
+    fontFamily: 'Inter, sans-serif'
+  }
+
+  const descriptionStyle = {
+    fontSize: '13px',
+    color: coresRoraima.cinzaClaro,
+    fontWeight: '500',
+    fontFamily: 'Inter, sans-serif',
+    textAlign: 'center' as const
+  }
+
   return (
     <div style={{ 
       display: 'grid', 
       gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
       gap: '20px',
-      padding: '0'
+      padding: '0',
+      fontFamily: 'Inter, sans-serif'
     }}>
       
       {/* Total de Obras */}
-      <div style={{
-        backgroundColor: '#ffffff',
-        borderRadius: '12px',
-        padding: '24px',
-        border: '2px solid #e2e8f0',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-        transition: 'all 0.3s ease',
-        cursor: 'default'
-      }}
+      <div style={cardStyle}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = 'translateY(-2px)'
         e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)'
@@ -51,67 +97,35 @@ const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas, selectedProject
         e.currentTarget.style.borderColor = '#e2e8f0'
       }}>
         <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          marginBottom: '16px'
+          ...iconContainerStyle,
+          backgroundColor: '#f8fafc',
+          border: `2px solid ${coresRoraima.azul}`
         }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '40px',
-            height: '40px',
-            borderRadius: '10px',
-            backgroundColor: '#eff6ff',
-            border: `2px solid ${coresRoraima.azul}`
-          }}>
-            <Building2 style={{ 
-              width: '20px', 
-              height: '20px', 
-              color: coresRoraima.azul
-            }} />
-          </div>
-          <h3 style={{
-            color: coresRoraima.preto,
-            fontSize: '16px',
-            fontWeight: '600',
-            margin: 0,
-            letterSpacing: '0.3px'
-          }}>
-            Total de Obras
-          </h3>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.azul} strokeWidth="2">
+            <path d="M3 21h18"/>
+            <path d="M5 21V7l8-4v18"/>
+            <path d="M19 21V11l-6-4"/>
+          </svg>
         </div>
         
+        <h3 style={titleStyle}>
+          Total de Obras
+        </h3>
+        
         <div style={{ 
-          fontSize: '32px', 
-          fontWeight: '700', 
-          color: coresRoraima.azul,
-          marginBottom: '8px',
-          lineHeight: '1.1'
+          ...valueStyle,
+          color: coresRoraima.azul
         }}>
           {metricas.totalObras}
         </div>
         
-        <div style={{ 
-          fontSize: '13px', 
-          color: coresRoraima.cinzaClaro,
-          fontWeight: '500'
-        }}>
+        <div style={descriptionStyle}>
           {metricas.obrasComExecucao} com dados de execução
         </div>
       </div>
 
       {/* Progresso Geral Médio */}
-      <div style={{
-        backgroundColor: '#ffffff',
-        borderRadius: '12px',
-        padding: '24px',
-        border: '2px solid #e2e8f0',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-        transition: 'all 0.3s ease',
-        cursor: 'default'
-      }}
+      <div style={cardStyle}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = 'translateY(-2px)'
         e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)'
@@ -123,67 +137,34 @@ const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas, selectedProject
         e.currentTarget.style.borderColor = '#e2e8f0'
       }}>
         <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          marginBottom: '16px'
+          ...iconContainerStyle,
+          backgroundColor: '#f8fafc',
+          border: `2px solid ${coresRoraima.azul}`
         }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '40px',
-            height: '40px',
-            borderRadius: '10px',
-            backgroundColor: '#eff6ff',
-            border: `2px solid ${coresRoraima.azul}`
-          }}>
-            <TrendingUp style={{ 
-              width: '20px', 
-              height: '20px', 
-              color: coresRoraima.azul
-            }} />
-          </div>
-          <h3 style={{
-            color: coresRoraima.preto,
-            fontSize: '16px',
-            fontWeight: '600',
-            margin: 0,
-            letterSpacing: '0.3px'
-          }}>
-            Progresso Geral Médio
-          </h3>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.azul} strokeWidth="2">
+            <path d="M3 3v18h18"/>
+            <path d="M7 16l4-4 4 4 6-6"/>
+          </svg>
         </div>
         
+        <h3 style={titleStyle}>
+          Progresso Geral Médio
+        </h3>
+        
         <div style={{ 
-          fontSize: '32px', 
-          fontWeight: '700', 
-          color: coresRoraima.azul,
-          marginBottom: '8px',
-          lineHeight: '1.1'
+          ...valueStyle,
+          color: coresRoraima.azul
         }}>
           {metricas.mediaaProgressoGeral}%
         </div>
         
-        <div style={{ 
-          fontSize: '13px', 
-          color: coresRoraima.cinzaClaro,
-          fontWeight: '500'
-        }}>
+        <div style={descriptionStyle}>
           Média de todas as tarefas
         </div>
       </div>
 
       {/* Avanço Físico Médio */}
-      <div style={{
-        backgroundColor: '#ffffff',
-        borderRadius: '12px',
-        padding: '24px',
-        border: '2px solid #e2e8f0',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-        transition: 'all 0.3s ease',
-        cursor: 'default'
-      }}
+      <div style={cardStyle}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = 'translateY(-2px)'
         e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)'
@@ -195,67 +176,34 @@ const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas, selectedProject
         e.currentTarget.style.borderColor = '#e2e8f0'
       }}>
         <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          marginBottom: '16px'
+          ...iconContainerStyle,
+          backgroundColor: '#f0fdf4',
+          border: `2px solid ${coresRoraima.verde}`
         }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '40px',
-            height: '40px',
-            borderRadius: '10px',
-            backgroundColor: '#f0fdf4',
-            border: `2px solid ${coresRoraima.verde}`
-          }}>
-            <Target style={{ 
-              width: '20px', 
-              height: '20px', 
-              color: coresRoraima.verde
-            }} />
-          </div>
-          <h3 style={{
-            color: coresRoraima.preto,
-            fontSize: '16px',
-            fontWeight: '600',
-            margin: 0,
-            letterSpacing: '0.3px'
-          }}>
-            Avanço Físico Médio
-          </h3>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.verde} strokeWidth="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 4"/>
+          </svg>
         </div>
         
+        <h3 style={titleStyle}>
+          Avanço Físico Médio
+        </h3>
+        
         <div style={{ 
-          fontSize: '32px', 
-          fontWeight: '700', 
-          color: coresRoraima.verde,
-          marginBottom: '8px',
-          lineHeight: '1.1'
+          ...valueStyle,
+          color: coresRoraima.verde
         }}>
           {metricas.mediaAvancaoFisico}%
         </div>
         
-        <div style={{ 
-          fontSize: '13px', 
-          color: coresRoraima.cinzaClaro,
-          fontWeight: '500'
-        }}>
+        <div style={descriptionStyle}>
           Baseado em marcos físicos
         </div>
       </div>
 
       {/* Marcos Físicos */}
-      <div style={{
-        backgroundColor: '#ffffff',
-        borderRadius: '12px',
-        padding: '24px',
-        border: '2px solid #e2e8f0',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-        transition: 'all 0.3s ease',
-        cursor: 'default'
-      }}
+      <div style={cardStyle}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = 'translateY(-2px)'
         e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)'
@@ -267,53 +215,28 @@ const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas, selectedProject
         e.currentTarget.style.borderColor = '#e2e8f0'
       }}>
         <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          marginBottom: '16px'
+          ...iconContainerStyle,
+          backgroundColor: '#faf5ff',
+          border: `2px solid ${coresRoraima.roxo}`
         }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '40px',
-            height: '40px',
-            borderRadius: '10px',
-            backgroundColor: '#faf5ff',
-            border: `2px solid ${coresRoraima.roxo}`
-          }}>
-            <CheckCircle2 style={{ 
-              width: '20px', 
-              height: '20px', 
-              color: coresRoraima.roxo
-            }} />
-          </div>
-          <h3 style={{
-            color: coresRoraima.preto,
-            fontSize: '16px',
-            fontWeight: '600',
-            margin: 0,
-            letterSpacing: '0.3px'
-          }}>
-            Marcos Físicos
-          </h3>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.roxo} strokeWidth="2">
+            <path d="M9 12l2 2 4-4"/>
+            <circle cx="12" cy="12" r="10"/>
+          </svg>
         </div>
         
+        <h3 style={titleStyle}>
+          Marcos Físicos
+        </h3>
+        
         <div style={{ 
-          fontSize: '32px', 
-          fontWeight: '700', 
-          color: coresRoraima.roxo,
-          marginBottom: '8px',
-          lineHeight: '1.1'
+          ...valueStyle,
+          color: coresRoraima.roxo
         }}>
           {metricas.marcosFisicosConcluidos}/{metricas.totalMarcosFisicos}
         </div>
         
-        <div style={{ 
-          fontSize: '13px', 
-          color: coresRoraima.cinzaClaro,
-          fontWeight: '500'
-        }}>
+        <div style={descriptionStyle}>
           {avancaoFisicoPercentual}% concluídos
         </div>
       </div>

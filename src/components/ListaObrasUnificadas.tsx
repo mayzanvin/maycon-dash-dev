@@ -8,16 +8,29 @@ interface ListaObrasUnificadasProps {
 }
 
 const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, showAll, onObraClick }) => {
+  // Cores da Roraima Energia
+  const coresRoraima = {
+    azul: '#0EA5E9',
+    verde: '#10B981',
+    laranja: '#FF6B35',
+    vermelho: '#EF4444',
+    amarelo: '#F59E0B',
+    preto: '#000000',
+    cinza: '#374151',
+    cinzaClaro: '#6B7280'
+  }
+
   if (!obras.length) {
     return (
       <div style={{
-        background: 'linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 100%)',
-        border: '2px solid #FF6B35',
+        backgroundColor: '#ffffff',
+        border: '2px solid #e2e8f0',
         borderRadius: '12px',
         padding: '40px',
         textAlign: 'center',
-        color: '#94a3b8',
-        fontSize: '16px'
+        color: coresRoraima.cinza,
+        fontSize: '16px',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
       }}>
         ⚠️ Nenhuma obra encontrada para os filtros selecionados
       </div>
@@ -25,9 +38,9 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
   }
 
   const getCorProgresso = (progresso: number) => {
-    if (progresso >= 80) return '#00ff88'
-    if (progresso >= 50) return '#f59e0b'
-    return '#ff4444'
+    if (progresso >= 80) return coresRoraima.verde
+    if (progresso >= 50) return coresRoraima.amarelo
+    return coresRoraima.vermelho
   }
 
   const getStatusText = (progresso: number) => {
@@ -38,17 +51,27 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
   }
 
   return (
-    <div style={{ marginBottom: '30px' }}>
+    <div style={{
+      backgroundColor: '#ffffff',
+      padding: '20px',
+      borderRadius: '12px',
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+      border: '1px solid #e2e8f0',
+      marginBottom: '30px',
+      fontFamily: 'Inter, sans-serif'
+    }}>
       <h2 style={{ 
-        fontSize: '20px', 
+        fontSize: '24px', 
         marginBottom: '20px', 
-        color: '#00d4ff',
-        fontWeight: '700',
+        color: coresRoraima.preto,
+        fontWeight: '600',
         textAlign: 'center',
-        textShadow: '0 0 20px rgba(0, 212, 255, 0.5)',
-        letterSpacing: '1px'
+        borderBottom: `3px solid ${coresRoraima.laranja}`,
+        paddingBottom: '8px',
+        display: 'inline-block',
+        width: '100%'
       }}>
-        ◪ RESUMO DAS OBRAS {showAll ? `(${obras.length} OBRAS)` : '(OBRA SELECIONADA)'}
+        📋 RESUMO DAS OBRAS {showAll ? `(${obras.length} OBRAS)` : '(OBRA SELECIONADA)'}
       </h2>
 
       <div style={{
@@ -61,44 +84,35 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
             key={obra.codigo}
             onClick={() => onObraClick(obra)}
             style={{
-              background: 'linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 50%, #0a0e1a 100%)',
-              borderRadius: '16px',
+              backgroundColor: '#ffffff',
+              borderRadius: '12px',
               padding: '24px',
-              border: '2px solid #FF6B35',
-              boxShadow: `
-                0 0 20px rgba(255, 107, 53, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1)
-              `,
+              border: '2px solid #e2e8f0',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
-              position: 'relative',
-              overflow: 'hidden'
+              position: 'relative'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-4px)'
-              e.currentTarget.style.boxShadow = `
-                0 0 30px rgba(255, 107, 53, 0.5),
-                0 10px 20px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2)
-              `
+              e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.15)'
+              e.currentTarget.style.borderColor = coresRoraima.laranja
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = `
-                0 0 20px rgba(255, 107, 53, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1)
-              `
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)'
+              e.currentTarget.style.borderColor = '#e2e8f0'
             }}
           >
-            {/* Borda animada */}
+            {/* Borda superior colorida */}
             <div style={{
               position: 'absolute',
               top: '0',
               left: '0',
               right: '0',
-              height: '2px',
-              background: 'linear-gradient(90deg, transparent, #FF6B35, transparent)',
-              animation: 'borderGlow 2s ease-in-out infinite alternate'
+              height: '4px',
+              background: `linear-gradient(90deg, ${coresRoraima.azul}, ${coresRoraima.laranja})`,
+              borderRadius: '12px 12px 0 0'
             }} />
 
             {/* Header da obra */}
@@ -106,13 +120,14 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'flex-start',
-              marginBottom: '16px'
+              marginBottom: '16px',
+              marginTop: '8px'
             }}>
               <div style={{ flex: 1 }}>
                 <h3 style={{
                   fontSize: '18px',
                   fontWeight: '700',
-                  color: '#ffffff',
+                  color: coresRoraima.preto,
                   marginBottom: '4px',
                   lineHeight: '1.4',
                   wordWrap: 'break-word'
@@ -121,25 +136,25 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
                 </h3>
                 <p style={{
                   fontSize: '12px',
-                  color: '#94a3b8',
+                  color: coresRoraima.cinza,
                   fontFamily: 'monospace',
-                  background: 'rgba(0, 212, 255, 0.1)',
+                  backgroundColor: '#f8fafc',
                   padding: '2px 6px',
                   borderRadius: '4px',
-                  display: 'inline-block'
+                  display: 'inline-block',
+                  border: '1px solid #e2e8f0'
                 }}>
                   {obra.codigo}
                 </p>
               </div>
               
               <div style={{
-                background: `linear-gradient(135deg, ${getCorProgresso(obra.metricas.avancooFisico)} 0%, ${getCorProgresso(obra.metricas.avancooFisico)}88 100%)`,
-                color: '#000000',
+                backgroundColor: getCorProgresso(obra.metricas.avancooFisico),
+                color: '#ffffff',
                 padding: '4px 8px',
                 borderRadius: '6px',
                 fontSize: '11px',
                 fontWeight: '600',
-                boxShadow: `0 0 10px ${getCorProgresso(obra.metricas.avancooFisico)}`,
                 minWidth: '70px',
                 textAlign: 'center'
               }}>
@@ -156,8 +171,8 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
             }}>
               {/* Progresso Geral */}
               <div style={{
-                background: 'rgba(59, 130, 246, 0.1)',
-                border: '1px solid rgba(59, 130, 246, 0.3)',
+                backgroundColor: '#eff6ff',
+                border: `1px solid ${coresRoraima.azul}`,
                 borderRadius: '8px',
                 padding: '12px'
               }}>
@@ -165,23 +180,22 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
                   <TrendingUp style={{ 
                     width: '16px', 
                     height: '16px', 
-                    color: '#3b82f6',
+                    color: coresRoraima.azul,
                     marginRight: '6px'
                   }} />
-                  <span style={{ fontSize: '12px', color: '#94a3b8' }}>Progresso Geral</span>
+                  <span style={{ fontSize: '12px', color: coresRoraima.cinza }}>Progresso Geral</span>
                 </div>
                 <div style={{ 
                   fontSize: '24px', 
                   fontWeight: 'bold', 
-                  color: '#3b82f6',
-                  textShadow: '0 0 10px rgba(59, 130, 246, 0.5)'
+                  color: coresRoraima.azul
                 }}>
                   {obra.metricas.progressoGeral}%
                 </div>
                 <div style={{
                   width: '100%',
                   height: '4px',
-                  background: 'rgba(59, 130, 246, 0.2)',
+                  backgroundColor: '#dbeafe',
                   borderRadius: '2px',
                   marginTop: '6px',
                   overflow: 'hidden'
@@ -189,9 +203,8 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
                   <div style={{
                     width: `${obra.metricas.progressoGeral}%`,
                     height: '100%',
-                    background: 'linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%)',
+                    backgroundColor: coresRoraima.azul,
                     borderRadius: '2px',
-                    boxShadow: '0 0 8px rgba(59, 130, 246, 0.6)',
                     transition: 'width 0.5s ease'
                   }} />
                 </div>
@@ -199,8 +212,8 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
 
               {/* Avanço Físico */}
               <div style={{
-                background: 'rgba(0, 255, 136, 0.1)',
-                border: '1px solid rgba(0, 255, 136, 0.3)',
+                backgroundColor: '#f0fdf4',
+                border: `1px solid ${coresRoraima.verde}`,
                 borderRadius: '8px',
                 padding: '12px'
               }}>
@@ -208,23 +221,22 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
                   <Target style={{ 
                     width: '16px', 
                     height: '16px', 
-                    color: '#00ff88',
+                    color: coresRoraima.verde,
                     marginRight: '6px'
                   }} />
-                  <span style={{ fontSize: '12px', color: '#94a3b8' }}>Avanço Físico</span>
+                  <span style={{ fontSize: '12px', color: coresRoraima.cinza }}>Avanço Físico</span>
                 </div>
                 <div style={{ 
                   fontSize: '24px', 
                   fontWeight: 'bold', 
-                  color: '#00ff88',
-                  textShadow: '0 0 10px rgba(0, 255, 136, 0.5)'
+                  color: coresRoraima.verde
                 }}>
                   {obra.metricas.avancooFisico}%
                 </div>
                 <div style={{
                   width: '100%',
                   height: '4px',
-                  background: 'rgba(0, 255, 136, 0.2)',
+                  backgroundColor: '#dcfce7',
                   borderRadius: '2px',
                   marginTop: '6px',
                   overflow: 'hidden'
@@ -232,9 +244,8 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
                   <div style={{
                     width: `${obra.metricas.avancooFisico}%`,
                     height: '100%',
-                    background: 'linear-gradient(90deg, #00ff88 0%, #00cc66 100%)',
+                    backgroundColor: coresRoraima.verde,
                     borderRadius: '2px',
-                    boxShadow: '0 0 8px rgba(0, 255, 136, 0.6)',
                     transition: 'width 0.5s ease'
                   }} />
                 </div>
@@ -250,28 +261,28 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
             }}>
               <div style={{ textAlign: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '4px' }}>
-                  <Building2 style={{ width: '14px', height: '14px', color: '#94a3b8', marginRight: '4px' }} />
-                  <span style={{ fontSize: '11px', color: '#94a3b8' }}>Total</span>
+                  <Building2 style={{ width: '14px', height: '14px', color: coresRoraima.cinza, marginRight: '4px' }} />
+                  <span style={{ fontSize: '11px', color: coresRoraima.cinza }}>Total</span>
                 </div>
-                <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#ffffff' }}>
+                <div style={{ fontSize: '16px', fontWeight: 'bold', color: coresRoraima.preto }}>
                   {obra.metricas.totalTarefas}
                 </div>
               </div>
               
               <div style={{ textAlign: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '4px' }}>
-                  <Users style={{ width: '14px', height: '14px', color: '#94a3b8', marginRight: '4px' }} />
-                  <span style={{ fontSize: '11px', color: '#94a3b8' }}>Concluídas</span>
+                  <Users style={{ width: '14px', height: '14px', color: coresRoraima.cinza, marginRight: '4px' }} />
+                  <span style={{ fontSize: '11px', color: coresRoraima.cinza }}>Concluídas</span>
                 </div>
-                <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#00ff88' }}>
+                <div style={{ fontSize: '16px', fontWeight: 'bold', color: coresRoraima.verde }}>
                   {obra.metricas.tarefasConcluidas}
                 </div>
               </div>
               
               <div style={{ textAlign: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '4px' }}>
-                  <Wrench style={{ width: '14px', height: '14px', color: '#94a3b8', marginRight: '4px' }} />
-                  <span style={{ fontSize: '11px', color: '#94a3b8' }}>Marcos</span>
+                  <Wrench style={{ width: '14px', height: '14px', color: coresRoraima.cinza, marginRight: '4px' }} />
+                  <span style={{ fontSize: '11px', color: coresRoraima.cinza }}>Marcos</span>
                 </div>
                 <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#8b5cf6' }}>
                   {obra.metricas.marcosConcluidos}/{obra.metricas.totalMarcos}
@@ -283,11 +294,11 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
             <div style={{
               textAlign: 'center',
               padding: '8px',
-              background: 'rgba(255, 107, 53, 0.1)',
-              border: '1px solid rgba(255, 107, 53, 0.3)',
+              backgroundColor: '#fff7ed',
+              border: `1px solid ${coresRoraima.laranja}`,
               borderRadius: '6px',
               fontSize: '12px',
-              color: '#FF6B35',
+              color: coresRoraima.laranja,
               fontWeight: '600'
             }}>
               🔍 Clique para ver detalhes completos
