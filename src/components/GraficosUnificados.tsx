@@ -107,7 +107,7 @@ const GraficosUnificados: React.FC<GraficosUnificadosProps> = ({ obras, onObraCl
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
     }}>
       
-      {/* Gráfico de Barras */}
+      {/* Gráfico de Barras - PROGRESSO DAS OBRAS */}
       <div style={{
         backgroundColor: '#ffffff',
         borderRadius: '12px',
@@ -131,10 +131,10 @@ const GraficosUnificados: React.FC<GraficosUnificadosProps> = ({ obras, onObraCl
           textTransform: 'uppercase',
           letterSpacing: '1px'
         }}>
+          {/* 🔥 NOVO ÍCONE: Gráfico de Barras específico para PROGRESSO DAS OBRAS */}
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.azul} strokeWidth="2.5">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-            <rect x="7" y="7" width="3" height="9"/>
-            <rect x="14" y="7" width="3" height="5"/>
+            <path d="M12 3v18M6 9v9M18 6v12"/>
+            <path d="M3 21h18"/>
           </svg>
           PROGRESSO DAS OBRAS
         </h3>
@@ -144,63 +144,56 @@ const GraficosUnificados: React.FC<GraficosUnificadosProps> = ({ obras, onObraCl
             <defs>
               <linearGradient id="progressoGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={coresRoraima.azul} stopOpacity={1}/>
-                <stop offset="100%" stopColor={coresRoraima.azul} stopOpacity={0.7}/>
+                <stop offset="100%" stopColor={coresRoraima.azul} stopOpacity={0.6}/>
               </linearGradient>
               <linearGradient id="avancooGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={coresRoraima.verde} stopOpacity={1}/>
-                <stop offset="100%" stopColor={coresRoraima.verde} stopOpacity={0.7}/>
+                <stop offset="100%" stopColor={coresRoraima.verde} stopOpacity={0.6}/>
               </linearGradient>
             </defs>
-            
-            <CartesianGrid 
-              strokeDasharray="3 3" 
-              stroke="#e2e8f0"
-              vertical={false}
-            />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
             <XAxis 
               dataKey="nome" 
-              tick={{ fill: coresRoraima.cinza, fontSize: 11, fontFamily: 'Inter' }}
-              axisLine={{ stroke: coresRoraima.laranja }}
               angle={-45}
               textAnchor="end"
               height={80}
+              interval={0}
+              tick={{ fontSize: 11, fill: coresRoraima.cinza }}
             />
             <YAxis 
-              tick={{ fill: coresRoraima.cinza, fontSize: 12, fontFamily: 'Inter' }}
-              axisLine={{ stroke: coresRoraima.laranja }}
               domain={[0, 100]}
+              tick={{ fontSize: 11, fill: coresRoraima.cinza }}
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend 
-              wrapperStyle={{ color: coresRoraima.preto, fontFamily: 'Inter' }}
-              iconType="rect"
+              wrapperStyle={{ 
+                color: coresRoraima.preto, 
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' 
+              }}
             />
             <Bar 
               dataKey="progressoGeral" 
               fill="url(#progressoGrad)"
               name="Progresso Geral"
-              radius={[4, 4, 0, 0]}
+              radius={[2, 2, 0, 0]}
             />
             <Bar 
               dataKey="avancooFisico" 
               fill="url(#avancooGrad)"
               name="Avanço Físico"
-              radius={[4, 4, 0, 0]}
+              radius={[2, 2, 0, 0]}
             />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Mapa de Roraima */}
+      {/* Mapa de Localização - RORAIMA */}
       <div style={{
         backgroundColor: '#ffffff',
         borderRadius: '12px',
         padding: '24px',
         border: '2px solid #e2e8f0',
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
         minHeight: '400px'
       }}>
         <h3 style={{
@@ -219,11 +212,12 @@ const GraficosUnificados: React.FC<GraficosUnificadosProps> = ({ obras, onObraCl
           textTransform: 'uppercase',
           letterSpacing: '1px'
         }}>
+          {/* ✅ MANTER ÍCONE: Mapa/Localização (já está correto) */}
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.azul} strokeWidth="2.5">
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
             <circle cx="12" cy="10" r="3"/>
           </svg>
-          RORAIMA - LOCALIZAÇÃO DAS OBRAS
+          LOCALIZAÇÃO DAS OBRAS
         </h3>
         
         <svg width="300" height="280" viewBox="0 0 300 280" style={{ 
@@ -296,45 +290,36 @@ const GraficosUnificados: React.FC<GraficosUnificadosProps> = ({ obras, onObraCl
           gap: '16px',
           fontSize: '12px',
           color: coresRoraima.cinza,
-          fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+          fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+          justifyContent: 'center'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <div style={{ 
-              width: '8px', 
-              height: '8px', 
-              borderRadius: '50%', 
-              background: coresRoraima.verde
-            }} />
-            <span>Avançado (&gt;80%)</span>
+            <span style={{ width: '12px', height: '12px', backgroundColor: coresRoraima.verde, borderRadius: '50%' }}></span>
+            Avançado (&gt;80%)
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <div style={{ 
-              width: '8px', 
-              height: '8px', 
-              borderRadius: '50%', 
-              background: coresRoraima.amarelo
-            }} />
-            <span>Médio (50-80%)</span>
+            <span style={{ width: '12px', height: '12px', backgroundColor: coresRoraima.amarelo, borderRadius: '50%' }}></span>
+            Médio (50-80%)
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <div style={{ 
-              width: '8px', 
-              height: '8px', 
-              borderRadius: '50%', 
-              background: coresRoraima.vermelho
-            }} />
-            <span>Inicial (&lt;50%)</span>
+            <span style={{ width: '12px', height: '12px', backgroundColor: coresRoraima.vermelho, borderRadius: '50%' }}></span>
+            Inicial (&lt;50%)
           </div>
         </div>
       </div>
 
-      {/* Gráfico de Pizza */}
+      {/* Gráfico de Pizza - MARCOS FÍSICOS */}
       <div style={{
         backgroundColor: '#ffffff',
         borderRadius: '12px',
         padding: '24px',
         border: '2px solid #e2e8f0',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '400px'
       }}>
         <h3 style={{
           color: coresRoraima.preto,
@@ -352,10 +337,10 @@ const GraficosUnificados: React.FC<GraficosUnificadosProps> = ({ obras, onObraCl
           textTransform: 'uppercase',
           letterSpacing: '1px'
         }}>
+          {/* 🔥 NOVO ÍCONE: Gráfico Pizza específico para MARCOS FÍSICOS */}
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.verde} strokeWidth="2.5">
-            <path d="M9 12l2 2 4-4"/>
-            <circle cx="12" cy="12" r="10"/>
-            <circle cx="12" cy="12" r="3"/>
+            <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
+            <path d="M22 12A10 10 0 0 0 12 2v10z"/>
           </svg>
           MARCOS FÍSICOS
         </h3>
