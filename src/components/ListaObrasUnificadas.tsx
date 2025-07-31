@@ -56,9 +56,7 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
       padding: '20px',
       borderRadius: '12px',
       boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-      border: '1px solid #e2e8f0',
-      marginBottom: '30px',
-      fontFamily: 'Inter, sans-serif'
+      border: '1px solid #e2e8f0'
     }}>
       <h2 style={{ 
         fontSize: '24px', 

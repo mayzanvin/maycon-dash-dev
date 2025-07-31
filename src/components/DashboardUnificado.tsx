@@ -116,7 +116,7 @@ const DashboardUnificado: React.FC<DashboardUnificadoProps> = ({ data, dataUltim
               alignItems: 'center',
               gap: '8px',
               boxShadow: `0 0 0 1px ${coresRoraima.azul}20`,
-              fontFamily: 'Inter, sans-serif'
+              fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
             }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.azul} strokeWidth="2">
                 <circle cx="12" cy="12" r="10"/>
@@ -146,7 +146,7 @@ const DashboardUnificado: React.FC<DashboardUnificadoProps> = ({ data, dataUltim
               letterSpacing: '2px',
               marginBottom: '8px',
               textTransform: 'uppercase',
-              fontFamily: 'Inter, sans-serif'
+              fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
             }}>
               Dashboard
             </div>
@@ -159,7 +159,7 @@ const DashboardUnificado: React.FC<DashboardUnificadoProps> = ({ data, dataUltim
               marginBottom: '16px',
               letterSpacing: '1.5px',
               lineHeight: '1.1',
-              fontFamily: 'Inter, sans-serif'
+              fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
             }}>
               CONTROLE DE OBRAS
             </h1>
@@ -176,7 +176,7 @@ const DashboardUnificado: React.FC<DashboardUnificadoProps> = ({ data, dataUltim
               border: '1px solid #e5e7eb',
               maxWidth: '600px',
               lineHeight: '1.4',
-              fontFamily: 'Inter, sans-serif'
+              fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
             }}>
               Visualização unificada: Fiscalização (F) + Execução (E) com avanço físico real
             </p>
@@ -206,17 +206,20 @@ const DashboardUnificado: React.FC<DashboardUnificadoProps> = ({ data, dataUltim
               fontWeight: '600', 
               color: coresRoraima.preto,
               fontSize: '16px',
-              fontFamily: 'Inter, sans-serif'
+              fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
             }}>
               <svg 
-                width="16" 
-                height="16" 
+                width="18" 
+                height="18" 
                 viewBox="0 0 24 24" 
                 fill="none" 
                 stroke={coresRoraima.preto} 
-                strokeWidth="2"
+                strokeWidth="2.5"
               >
-                <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"/>
+                <rect x="3" y="3" width="7" height="9"/>
+                <rect x="13" y="3" width="7" height="5"/>
+                <rect x="13" y="12" width="7" height="9"/>
+                <rect x="3" y="16" width="7" height="5"/>
               </svg>
               Filtrar por Obra:
             </label>
@@ -235,7 +238,7 @@ const DashboardUnificado: React.FC<DashboardUnificadoProps> = ({ data, dataUltim
                 cursor: 'pointer',
                 outline: 'none',
                 transition: 'all 0.3s ease',
-                fontFamily: 'Inter, sans-serif'
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
               }}
               onFocus={(e) => {
                 e.target.style.borderColor = coresRoraima.laranja
@@ -267,15 +270,19 @@ const DashboardUnificado: React.FC<DashboardUnificadoProps> = ({ data, dataUltim
         }}>
           <h2 style={{
             fontSize: '24px',
-            fontWeight: '600',
+            fontWeight: '700',
             marginBottom: '20px',
             color: coresRoraima.preto,
             borderBottom: `3px solid ${coresRoraima.laranja}`,
             paddingBottom: '8px',
-            display: 'inline-block',
-            fontFamily: 'Inter, sans-serif'
+            display: 'block',
+            fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+            textAlign: 'center',
+            width: '100%',
+            textTransform: 'uppercase',
+            letterSpacing: '1.5px'
           }}>
-            ⚡ MÉTRICAS GERAIS - TODAS AS OBRAS
+            📊 MÉTRICAS GERAIS - TODAS AS OBRAS
           </h2>
           
           <MetricasObras metricas={metricas} />
@@ -292,15 +299,19 @@ const DashboardUnificado: React.FC<DashboardUnificadoProps> = ({ data, dataUltim
         }}>
           <h2 style={{
             fontSize: '24px',
-            fontWeight: '600',
+            fontWeight: '700',
             marginBottom: '20px',
             color: coresRoraima.preto,
             borderBottom: `3px solid ${coresRoraima.azul}`,
             paddingBottom: '8px',
-            display: 'inline-block',
-            fontFamily: 'Inter, sans-serif'
+            display: 'block',
+            fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+            textAlign: 'center',
+            width: '100%',
+            textTransform: 'uppercase',
+            letterSpacing: '1.5px'
           }}>
-            📊 ANÁLISE VISUAL
+            📈 ANÁLISE VISUAL
           </h2>
           
           <GraficosUnificados 

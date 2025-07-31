@@ -101,8 +101,7 @@ const GraficosUnificados: React.FC<GraficosUnificadosProps> = ({ obras, onObraCl
       gridTemplateColumns: '1fr 400px 1fr',
       gap: '24px',
       alignItems: 'start',
-      minHeight: '400px',
-      fontFamily: 'Inter, sans-serif'
+      minHeight: '400px'
     }}>
       
       {/* Gráfico de Barras */}
