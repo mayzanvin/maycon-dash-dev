@@ -56,20 +56,32 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
       padding: '20px',
       borderRadius: '12px',
       boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-      border: '1px solid #e2e8f0'
+      border: '1px solid #e2e8f0',
+      marginBottom: '30px',
+      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
     }}>
       <h2 style={{ 
         fontSize: '24px', 
         marginBottom: '20px', 
         color: coresRoraima.preto,
-        fontWeight: '600',
+        fontWeight: '700',
         textAlign: 'center',
         borderBottom: `3px solid ${coresRoraima.laranja}`,
         paddingBottom: '8px',
-        display: 'inline-block',
-        width: '100%'
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '12px',
+        width: '100%',
+        textTransform: 'uppercase',
+        letterSpacing: '1.5px',
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
       }}>
-        📋 RESUMO DAS OBRAS {showAll ? `(${obras.length} OBRAS)` : '(OBRA SELECIONADA)'}
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.laranja} strokeWidth="2.5">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <path d="M9 9h6M9 13h6M9 17h3"/>
+        </svg>
+        RESUMO DAS OBRAS {showAll ? `(${obras.length} OBRAS)` : '(OBRA SELECIONADA)'}
       </h2>
 
       <div style={{
@@ -128,14 +140,15 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
                   color: coresRoraima.preto,
                   marginBottom: '4px',
                   lineHeight: '1.4',
-                  wordWrap: 'break-word'
+                  wordWrap: 'break-word',
+                  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
                 }}>
                   {obra.nome}
                 </h3>
                 <p style={{
                   fontSize: '12px',
                   color: coresRoraima.cinza,
-                  fontFamily: 'monospace',
+                  fontFamily: 'Inter, monospace',
                   backgroundColor: '#f8fafc',
                   padding: '2px 6px',
                   borderRadius: '4px',
@@ -154,7 +167,8 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
                 fontSize: '11px',
                 fontWeight: '600',
                 minWidth: '70px',
-                textAlign: 'center'
+                textAlign: 'center',
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
               }}>
                 {getStatusText(obra.metricas.avancooFisico)}
               </div>
@@ -181,12 +195,17 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
                     color: coresRoraima.azul,
                     marginRight: '6px'
                   }} />
-                  <span style={{ fontSize: '12px', color: coresRoraima.cinza }}>Progresso Geral</span>
+                  <span style={{ 
+                    fontSize: '12px', 
+                    color: coresRoraima.cinza,
+                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+                  }}>Progresso Geral</span>
                 </div>
                 <div style={{ 
                   fontSize: '24px', 
                   fontWeight: 'bold', 
-                  color: coresRoraima.azul
+                  color: coresRoraima.azul,
+                  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
                 }}>
                   {obra.metricas.progressoGeral}%
                 </div>
@@ -222,12 +241,17 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
                     color: coresRoraima.verde,
                     marginRight: '6px'
                   }} />
-                  <span style={{ fontSize: '12px', color: coresRoraima.cinza }}>Avanço Físico</span>
+                  <span style={{ 
+                    fontSize: '12px', 
+                    color: coresRoraima.cinza,
+                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+                  }}>Avanço Físico</span>
                 </div>
                 <div style={{ 
                   fontSize: '24px', 
                   fontWeight: 'bold', 
-                  color: coresRoraima.verde
+                  color: coresRoraima.verde,
+                  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
                 }}>
                   {obra.metricas.avancooFisico}%
                 </div>
@@ -260,9 +284,18 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
               <div style={{ textAlign: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '4px' }}>
                   <Building2 style={{ width: '14px', height: '14px', color: coresRoraima.cinza, marginRight: '4px' }} />
-                  <span style={{ fontSize: '11px', color: coresRoraima.cinza }}>Total</span>
+                  <span style={{ 
+                    fontSize: '11px', 
+                    color: coresRoraima.cinza,
+                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+                  }}>Total</span>
                 </div>
-                <div style={{ fontSize: '16px', fontWeight: 'bold', color: coresRoraima.preto }}>
+                <div style={{ 
+                  fontSize: '16px', 
+                  fontWeight: 'bold', 
+                  color: coresRoraima.preto,
+                  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+                }}>
                   {obra.metricas.totalTarefas}
                 </div>
               </div>
@@ -270,9 +303,18 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
               <div style={{ textAlign: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '4px' }}>
                   <Users style={{ width: '14px', height: '14px', color: coresRoraima.cinza, marginRight: '4px' }} />
-                  <span style={{ fontSize: '11px', color: coresRoraima.cinza }}>Concluídas</span>
+                  <span style={{ 
+                    fontSize: '11px', 
+                    color: coresRoraima.cinza,
+                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+                  }}>Concluídas</span>
                 </div>
-                <div style={{ fontSize: '16px', fontWeight: 'bold', color: coresRoraima.verde }}>
+                <div style={{ 
+                  fontSize: '16px', 
+                  fontWeight: 'bold', 
+                  color: coresRoraima.verde,
+                  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+                }}>
                   {obra.metricas.tarefasConcluidas}
                 </div>
               </div>
@@ -280,9 +322,18 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
               <div style={{ textAlign: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '4px' }}>
                   <Wrench style={{ width: '14px', height: '14px', color: coresRoraima.cinza, marginRight: '4px' }} />
-                  <span style={{ fontSize: '11px', color: coresRoraima.cinza }}>Marcos</span>
+                  <span style={{ 
+                    fontSize: '11px', 
+                    color: coresRoraima.cinza,
+                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+                  }}>Marcos</span>
                 </div>
-                <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#8b5cf6' }}>
+                <div style={{ 
+                  fontSize: '16px', 
+                  fontWeight: 'bold', 
+                  color: '#8b5cf6',
+                  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+                }}>
                   {obra.metricas.marcosConcluidos}/{obra.metricas.totalMarcos}
                 </div>
               </div>
@@ -297,7 +348,8 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
               borderRadius: '6px',
               fontSize: '12px',
               color: coresRoraima.laranja,
-              fontWeight: '600'
+              fontWeight: '600',
+              fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
             }}>
               🔍 Clique para ver detalhes completos
             </div>

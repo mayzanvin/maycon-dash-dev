@@ -49,7 +49,8 @@ const GraficosUnificados: React.FC<GraficosUnificadosProps> = ({ obras, onObraCl
           borderRadius: '8px',
           padding: '12px',
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-          color: coresRoraima.preto
+          color: coresRoraima.preto,
+          fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
         }}>
           <p style={{ color: coresRoraima.preto, fontWeight: 'bold', marginBottom: '8px' }}>{label}</p>
           {payload.map((entry: any, index: number) => (
@@ -75,7 +76,8 @@ const GraficosUnificados: React.FC<GraficosUnificadosProps> = ({ obras, onObraCl
           borderRadius: '8px',
           padding: '12px',
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-          color: coresRoraima.preto
+          color: coresRoraima.preto,
+          fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
         }}>
           <p style={{ color: data.payload.cor, fontWeight: 'bold', marginBottom: '4px' }}>
             {data.name}
@@ -101,7 +103,8 @@ const GraficosUnificados: React.FC<GraficosUnificadosProps> = ({ obras, onObraCl
       gridTemplateColumns: '1fr 400px 1fr',
       gap: '24px',
       alignItems: 'start',
-      minHeight: '400px'
+      minHeight: '400px',
+      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
     }}>
       
       {/* Gráfico de Barras */}
@@ -115,13 +118,25 @@ const GraficosUnificados: React.FC<GraficosUnificadosProps> = ({ obras, onObraCl
         <h3 style={{
           color: coresRoraima.preto,
           fontSize: '18px',
-          fontWeight: '600',
+          fontWeight: '700',
           marginBottom: '20px',
           textAlign: 'center',
           borderBottom: `2px solid ${coresRoraima.azul}`,
-          paddingBottom: '8px'
+          paddingBottom: '8px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+          fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+          textTransform: 'uppercase',
+          letterSpacing: '1px'
         }}>
-          📊 Progresso das Obras
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.azul} strokeWidth="2.5">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <rect x="7" y="7" width="3" height="9"/>
+            <rect x="14" y="7" width="3" height="5"/>
+          </svg>
+          PROGRESSO DAS OBRAS
         </h3>
         
         <ResponsiveContainer width="100%" height={300}>
@@ -144,20 +159,20 @@ const GraficosUnificados: React.FC<GraficosUnificadosProps> = ({ obras, onObraCl
             />
             <XAxis 
               dataKey="nome" 
-              tick={{ fill: coresRoraima.cinza, fontSize: 11 }}
+              tick={{ fill: coresRoraima.cinza, fontSize: 11, fontFamily: 'Inter' }}
               axisLine={{ stroke: coresRoraima.laranja }}
               angle={-45}
               textAnchor="end"
               height={80}
             />
             <YAxis 
-              tick={{ fill: coresRoraima.cinza, fontSize: 12 }}
+              tick={{ fill: coresRoraima.cinza, fontSize: 12, fontFamily: 'Inter' }}
               axisLine={{ stroke: coresRoraima.laranja }}
               domain={[0, 100]}
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend 
-              wrapperStyle={{ color: coresRoraima.preto }}
+              wrapperStyle={{ color: coresRoraima.preto, fontFamily: 'Inter' }}
               iconType="rect"
             />
             <Bar 
@@ -191,13 +206,24 @@ const GraficosUnificados: React.FC<GraficosUnificadosProps> = ({ obras, onObraCl
         <h3 style={{
           color: coresRoraima.preto,
           fontSize: '18px',
-          fontWeight: '600',
+          fontWeight: '700',
           marginBottom: '20px',
           textAlign: 'center',
           borderBottom: `2px solid ${coresRoraima.azul}`,
-          paddingBottom: '8px'
+          paddingBottom: '8px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+          fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+          textTransform: 'uppercase',
+          letterSpacing: '1px'
         }}>
-          🗺️ Roraima - Localização das Obras
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.azul} strokeWidth="2.5">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          RORAIMA - LOCALIZAÇÃO DAS OBRAS
         </h3>
         
         <svg width="300" height="280" viewBox="0 0 300 280" style={{ 
@@ -257,10 +283,10 @@ const GraficosUnificados: React.FC<GraficosUnificadosProps> = ({ obras, onObraCl
           })}
           
           {/* Coordenadas geográficas */}
-          <text x="20" y="25" fill={coresRoraima.cinza} fontSize="10">5°N</text>
-          <text x="20" y="260" fill={coresRoraima.cinza} fontSize="10">0°N</text>
-          <text x="20" y="275" fill={coresRoraima.cinza} fontSize="10">64°W</text>
-          <text x="260" y="275" fill={coresRoraima.cinza} fontSize="10">58°W</text>
+          <text x="20" y="25" fill={coresRoraima.cinza} fontSize="10" fontFamily="Inter">5°N</text>
+          <text x="20" y="260" fill={coresRoraima.cinza} fontSize="10" fontFamily="Inter">0°N</text>
+          <text x="20" y="275" fill={coresRoraima.cinza} fontSize="10" fontFamily="Inter">64°W</text>
+          <text x="260" y="275" fill={coresRoraima.cinza} fontSize="10" fontFamily="Inter">58°W</text>
         </svg>
         
         {/* Legenda */}
@@ -269,7 +295,8 @@ const GraficosUnificados: React.FC<GraficosUnificadosProps> = ({ obras, onObraCl
           display: 'flex',
           gap: '16px',
           fontSize: '12px',
-          color: coresRoraima.cinza
+          color: coresRoraima.cinza,
+          fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <div style={{ 
@@ -312,13 +339,25 @@ const GraficosUnificados: React.FC<GraficosUnificadosProps> = ({ obras, onObraCl
         <h3 style={{
           color: coresRoraima.preto,
           fontSize: '18px',
-          fontWeight: '600',
+          fontWeight: '700',
           marginBottom: '20px',
           textAlign: 'center',
           borderBottom: `2px solid ${coresRoraima.verde}`,
-          paddingBottom: '8px'
+          paddingBottom: '8px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+          fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+          textTransform: 'uppercase',
+          letterSpacing: '1px'
         }}>
-          🎯 Marcos Físicos
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.verde} strokeWidth="2.5">
+            <path d="M9 12l2 2 4-4"/>
+            <circle cx="12" cy="12" r="10"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          MARCOS FÍSICOS
         </h3>
         
         <ResponsiveContainer width="100%" height={300}>
@@ -342,7 +381,10 @@ const GraficosUnificados: React.FC<GraficosUnificadosProps> = ({ obras, onObraCl
             </Pie>
             <Tooltip content={<CustomPieTooltip />} />
             <Legend 
-              wrapperStyle={{ color: coresRoraima.preto }}
+              wrapperStyle={{ 
+                color: coresRoraima.preto, 
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' 
+              }}
               iconType="rect"
             />
           </PieChart>

@@ -275,14 +275,22 @@ const DashboardUnificado: React.FC<DashboardUnificadoProps> = ({ data, dataUltim
             color: coresRoraima.preto,
             borderBottom: `3px solid ${coresRoraima.laranja}`,
             paddingBottom: '8px',
-            display: 'block',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '12px',
             fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
             textAlign: 'center',
             width: '100%',
             textTransform: 'uppercase',
             letterSpacing: '1.5px'
           }}>
-            📊 MÉTRICAS GERAIS - TODAS AS OBRAS
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.laranja} strokeWidth="2.5">
+              <path d="M3 3v18h18"/>
+              <path d="M7 16l4-4 4 4 6-6"/>
+              <circle cx="11" cy="11" r="2"/>
+            </svg>
+            MÉTRICAS GERAIS - TODAS AS OBRAS
           </h2>
           
           <MetricasObras metricas={metricas} />
@@ -304,14 +312,22 @@ const DashboardUnificado: React.FC<DashboardUnificadoProps> = ({ data, dataUltim
             color: coresRoraima.preto,
             borderBottom: `3px solid ${coresRoraima.azul}`,
             paddingBottom: '8px',
-            display: 'block',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '12px',
             fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
             textAlign: 'center',
             width: '100%',
             textTransform: 'uppercase',
             letterSpacing: '1.5px'
           }}>
-            📈 ANÁLISE VISUAL
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.azul} strokeWidth="2.5">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <rect x="7" y="7" width="3" height="9"/>
+              <rect x="14" y="7" width="3" height="5"/>
+            </svg>
+            ANÁLISE VISUAL
           </h2>
           
           <GraficosUnificados 
