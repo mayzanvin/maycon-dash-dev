@@ -1,3 +1,4 @@
+// src/components/ModalDetalhesObra.tsx - VERSÃO CORRIGIDA
 import { useEffect } from 'react'
 import { ObraUnificada } from '@/types/obra-unificada'
 import { X, Calendar, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react'
@@ -31,31 +32,48 @@ const ModalDetalhesObra: React.FC<ModalDetalhesObraProps> = ({ obra, onClose }) 
   const calcularDatasExtremas = () => {
     const todasTarefas = [...obra.fiscalizacao.tarefas, ...obra.execucao.tarefas]
     
-    const datasInicio = todasTarefas.map(t => t['Data Início']).filter(d => d && d > 0)
-    const datasTermino = todasTarefas.map(t => t['Data Término']).filter(d => d && d > 0)
-    const datasBaseInicio = todasTarefas.map(t => t['LinhaBase Início']).filter(d => d && d > 0)
-    const datasBaseTermino = todasTarefas.map(t => t['LinhaBase Término']).filter(d => d && d > 0)
+    const datasInicio = todasTarefas
+      .map(t => t['Data Início'])
+      .filter((d): d is number => typeof d === 'number' && d > 0)
+    
+    const datasTermino = todasTarefas
+      .map(t => t['Data Término'])
+      .filter((d): d is number => typeof d === 'number' && d > 0)
+    
+    const datasBaseInicio = todasTarefas
+      .map(t => t['LinhaBase Início'])
+      .filter((d): d is number => typeof d === 'number' && d > 0)
+    
+    const datasBaseTermino = todasTarefas
+      .map(t => t['LinhaBase Término'])
+      .filter((d): d is number => typeof d === 'number' && d > 0)
     
     const todasDatas = [...datasInicio, ...datasTermino, ...datasBaseInicio, ...datasBaseTermino]
     
     return {
-      dataInicio: Math.min(...datasInicio),
-      dataTermino: Math.max(...datasTermino),
-      dataInicioBase: Math.min(...datasBaseInicio),
-      dataTerminoBase: Math.max(...datasBaseTermino),
+      dataInicio: datasInicio.length > 0 ? Math.min(...datasInicio) : 0,
+      dataTermino: datasTermino.length > 0 ? Math.max(...datasTermino) : 0,
+      dataInicioBase: datasBaseInicio.length > 0 ? Math.min(...datasBaseInicio) : 0,
+      dataTerminoBase: datasBaseTermino.length > 0 ? Math.max(...datasBaseTermino) : 0,
       duracaoTotal: todasDatas.length > 0 ? Math.max(...todasDatas) - Math.min(...todasDatas) : 0
     }
   }
 
-  const formatarData = (excelDate: number) => {
+  const formatarData = (excelDate: number | undefined): string => {
     if (!excelDate || excelDate <= 0) return 'Não definida'
-    const date = new Date((excelDate - 25569) * 86400 * 1000)
-    return date.toLocaleDateString('pt-BR')
+    
+    try {
+      const date = new Date((excelDate - 25569) * 86400 * 1000)
+      return date.toLocaleDateString('pt-BR')
+    } catch (error) {
+      console.warn('Erro ao formatar data:', excelDate, error)
+      return 'Data inválida'
+    }
   }
 
   const { dataInicio, dataTermino, dataInicioBase, dataTerminoBase } = calcularDatasExtremas()
   
-  const diasAtraso = dataTermino - dataTerminoBase
+  const diasAtraso = dataTermino && dataTerminoBase ? dataTermino - dataTerminoBase : 0
   const statusAtraso = diasAtraso > 0 ? 'Atrasada' : diasAtraso < 0 ? 'Adiantada' : 'No prazo'
   const corStatus = diasAtraso > 0 ? '#ff4444' : diasAtraso < 0 ? '#00ff88' : '#00d4ff'
 

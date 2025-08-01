@@ -1,58 +1,65 @@
-// Tipos para obras unificadas (Fiscalização + Execução)
-
+// src/types/obra-unificada.ts - ATUALIZADO PARA NOVA PLANILHA
 export interface TaskData {
-  EDT: number | string;
-  'Nome da Tarefa': string;
-  'Nível': number;
-  'Resumo (pai)': string;
-  'Data Início': number;
-  'Data Término': number;
-  '% Concluído': number;
-  'LinhaBase Início': number;
-  'LinhaBase Término': number;
-  Marco?: string; // Presente apenas na execução
+  EDT: string
+  'Nome da Tarefa': string
+  'Nível': number
+  'Resumo (pai)': string
+  'Marco': string | null
+  'Data Início': number
+  'Data Término': number
+  '% Concluído': number
+  'LinhaBase Início': number
+  'LinhaBase Término': number
+  'Predecessoras': string | null
+  'Sucessoras': string | null
+  // NOVAS COLUNAS IDENTIFICADAS
+  'Anotações': string | null
+  'Nomes dos Recursos': string | null
+  'Coordenada': string | null
 }
 
 export interface FiscalizacaoData {
-  planilha: string;
-  tarefas: TaskData[];
-  totalTarefas: number;
+  tarefas: TaskData[]
+  totalTarefas: number
+  tarefasConcluidas: number
 }
 
 export interface ExecucaoData {
-  planilha: string;
-  tarefas: TaskData[];
-  totalTarefas: number;
-  marcosComSim: number;
-  marcosConcluidos: number;
+  tarefas: TaskData[]
+  totalTarefas: number
+  tarefasConcluidas: number
 }
 
 export interface MetricasObra {
-  progressoGeral: number;
-  avancooFisico: number;
-  totalTarefas: number;
-  tarefasConcluidas: number;
-  totalMarcos: number;
-  marcosConcluidos: number;
+  progressoGeral: number
+  avancooFisico: number
+  totalTarefas: number
+  tarefasConcluidas: number
+  totalMarcos: number
+  marcosConcluidos: number
 }
 
 export interface ObraUnificada {
-  nome: string;
-  codigo: string;
-  fiscalizacao: FiscalizacaoData;
-  execucao: ExecucaoData;
-  metricas: MetricasObra;
-}
-
-export interface DashboardUnificado {
-  [projectCode: string]: ObraUnificada;
+  codigo: string
+  nome: string
+  fiscalizacao: FiscalizacaoData
+  execucao: ExecucaoData
+  metricas: MetricasObra
 }
 
 export interface MetricasGerais {
-  totalObras: number;
-  obrasComExecucao: number;
-  mediaaProgressoGeral: number;
-  mediaAvancaoFisico: number;
-  totalMarcosFisicos: number;
-  marcosFisicosConcluidos: number;
+  totalObras: number
+  obrasComExecucao: number
+  mediaaProgressoGeral: number
+  mediaAvancaoFisico: number
+  totalMarcosFisicos: number
+  marcosFisicosConcluidos: number
 }
+
+// Dashboard principal - objeto com obras indexadas por código
+export interface DashboardUnificado {
+  [obraId: string]: ObraUnificada
+}
+
+// Export do tipo principal para compatibilidade
+export type DashboardUnificadoType = DashboardUnificado
