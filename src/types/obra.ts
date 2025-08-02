@@ -1,15 +1,22 @@
-// Tipos gerados automaticamente baseado nas planilhas do Excel
+// src/types/obra.ts - CORREÇÃO DO ERRO lastUpdated
 
 export interface BaseObraData {
   EDT: number | string;
   Nome_da_Tarefa: string;
   N_vel: number;
   Resumo__pai_: string;
+  Marco?: string;
   Data_In_cio: number;
   Data_T_rmino: number;
   __Conclu_do: number;
   LinhaBase_In_cio: number | string;
   LinhaBase_T_rmino: number | string;
+  // ✅ AS 5 COLUNAS IMPORTANTES ADICIONADAS
+  Predecessoras?: string;
+  Sucessoras?: string;
+  Anotacoes?: string;
+  Nomes_dos_Recursos?: string;
+  Coordenada?: string;
 }
 
 export interface Planilha1Data extends BaseObraData {}
@@ -39,6 +46,7 @@ export interface DashboardData {
   sheets: ExcelData;
   metrics: ObraMetrics;
   sheetNames: string[];
+  lastUpdated: string;  // ✅ CORRIGIDO: Propriedade que faltava
 }
 
 // Nomes das planilhas encontradas

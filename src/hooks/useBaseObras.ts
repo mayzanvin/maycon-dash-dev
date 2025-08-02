@@ -1,4 +1,4 @@
-// src/hooks/useBaseObras.ts - SEM DADOS MOCK - SÓ DADOS REAIS
+// src/hooks/useBaseObras.ts - SEM VARIÁVEIS NÃO UTILIZADAS
 import { useState, useEffect, useCallback } from 'react'
 import { DashboardData } from '@/types/obra'
 import { DashboardUnificadoType } from '@/types/obra-unificada'
@@ -9,108 +9,63 @@ interface UseBaseObrasReturn {
   data: DashboardUnificadoType | null
   loading: boolean
   error: string | null
-  ultimaAtualizacao: string
-  refresh: () => void
+  refreshData: () => Promise<void>
 }
 
-export const useBaseObras = (): UseBaseObrasReturn => {
+export function useBaseObras(): UseBaseObrasReturn {
   const [data, setData] = useState<DashboardUnificadoType | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [ultimaAtualizacao, setUltimaAtualizacao] = useState<string>('')
-
-  // Caminho do arquivo BaseObras.xlsx no OneDrive
-  const CAMINHO_BASE_OBRAS = 'C:/Users/mzvinga/OneDrive - RORAIMA ENERGIA/SUBESTAÇÕES OBRAS/COORDENAÇÃO/CRONOGRAMAS/BaseObras.xlsx'
-
+  
+  // Caminho do arquivo BaseObras.xlsx
+  const CAMINHO_BASE_OBRAS = '/BaseObras.xlsx'
+  
   const carregarDados = useCallback(async () => {
+    console.log('🔄 Iniciando carregamento dos dados...')
+    setLoading(true)
+    setError(null)
+    
     try {
-      setLoading(true)
+      // 1. Processar Excel
+      console.log('📋 Processando BaseObras.xlsx...')
+      const dashboardData: DashboardData = await ExcelProcessor.processBaseObras(CAMINHO_BASE_OBRAS)
+      
+      // 2. Converter para estrutura unificada
+      console.log('🔄 Convertendo para dashboard unificado...')
+      const dashboardUnificado = DataAdapter.convertToDashboardUnificado(dashboardData)
+      
+      // 3. Logs informativos - ✅ USAR codigo para evitar warning
+      console.log('✅ Dados carregados com sucesso!')
+      console.log(`📊 Total de obras: ${Object.keys(dashboardUnificado).length}`)
+      
+      Object.entries(dashboardUnificado).forEach(([codigo, obra]) => {
+        console.log(`   • ${obra.nome} (${codigo})`)
+        console.log(`     Energização: ${obra.temEnergizacao ? 'SIM' : 'NÃO'}`)
+      })
+      
+      setData(dashboardUnificado)
       setError(null)
-      setData(null) // ✅ Limpar dados anteriores
-
-      console.log('🔄 Tentando carregar BaseObras.xlsx...')
-      console.log('📁 Caminho:', CAMINHO_BASE_OBRAS)
       
-      // ✅ TENTAR CARREGAR DADOS REAIS - SEM FALLBACK PARA MOCK
-      const dadosBrutos: DashboardData = await ExcelProcessor.processBaseObras(CAMINHO_BASE_OBRAS)
-      console.log('✅ BaseObras.xlsx carregado com sucesso!')
-      
-      // Verificar se há dados válidos
-      if (!dadosBrutos.sheets || Object.keys(dadosBrutos.sheets).length === 0) {
-        throw new Error('Arquivo Excel não contém abas válidas com dados')
-      }
-      
-      // Converter para estrutura unificada
-      const dadosUnificados = DataAdapter.convertToUnifiedStructure(dadosBrutos)
-      
-      // Verificar se a conversão gerou obras válidas
-      if (!dadosUnificados || Object.keys(dadosUnificados).length === 0) {
-        throw new Error('Não foi possível processar as obras do arquivo Excel')
-      }
-      
-      console.log('✅ Dados convertidos para estrutura unificada!')
-      console.log('📊 Obras encontradas:', Object.keys(dadosUnificados))
-      
-      setData(dadosUnificados)
-      
-      // Atualizar timestamp de sucesso
-      const agora = new Date()
-      const timestamp = agora.toLocaleString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit', 
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'America/Boa_Vista'
-      })
-      setUltimaAtualizacao(`Última atualização: ${timestamp}`)
-
-      console.log('📊 Dashboard carregado:', {
-        obras: Object.keys(dadosUnificados).length,
-        totalTarefas: Object.values(dadosUnificados)
-          .reduce((sum, obra) => sum + obra.metricas.totalTarefas, 0)
-      })
-
     } catch (err) {
-      // ✅ SEM FALLBACK - MOSTRAR ERRO REAL
-      const errorMessage = err instanceof Error ? err.message : String(err)
-      console.error('❌ Erro ao carregar BaseObras.xlsx:', errorMessage)
-      
-      setError(errorMessage)
-      setData(null) // ✅ Garantir que não há dados inválidos
-      setUltimaAtualizacao('Falha no carregamento')
+      console.error('❌ Erro ao carregar dados:', err)
+      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido'
+      setError(`Erro ao carregar BaseObras.xlsx: ${errorMessage}`)
+      setData(null)
       
     } finally {
       setLoading(false)
     }
   }, [CAMINHO_BASE_OBRAS])
-
-  // Carregamento inicial
+  
+  // Carregar dados na inicialização
   useEffect(() => {
     carregarDados()
   }, [carregarDados])
-
-  // Auto-refresh a cada 5 minutos
-  useEffect(() => {
-    const interval = setInterval(() => {
-      console.log('🔄 Auto-refresh BaseObras.xlsx...')
-      carregarDados()
-    }, 5 * 60 * 1000) // 5 minutos
-
-    return () => clearInterval(interval)
-  }, [carregarDados])
-
-  // Função para refresh manual
-  const refresh = useCallback(() => {
-    console.log('🔄 Refresh manual solicitado...')
-    carregarDados()
-  }, [carregarDados])
-
+  
   return {
-    data, // ✅ Só retorna dados REAIS ou null
+    data,
     loading,
     error,
-    ultimaAtualizacao,
-    refresh
+    refreshData: carregarDados
   }
 }
