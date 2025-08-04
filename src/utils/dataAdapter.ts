@@ -1,200 +1,459 @@
-// src/utils/dataAdapter.ts - CORREÇÃO DOS ERROS ESPECÍFICOS
+// src/utils/dataAdapter.ts - COMPATÍVEL COM BaseObraData REAL
 import { DashboardData, BaseObraData } from '@/types/obra'
-import { DashboardUnificadoType, ObraUnificada, TaskData, FiscalizacaoData, ExecucaoData, MetricasObra } from '@/types/obra-unificada'
+import { DashboardUnificadoType, ObraUnificada, MetricasGerais } from '@/types/obra-unificada'
 
 export class DataAdapter {
   
-  static convertToDashboardUnificado(dashboardData: DashboardData): DashboardUnificadoType {
-    console.log('🔄 Convertendo para DashboardUnificado...')
+  static convertToUnificado(dashboardData: DashboardData): DashboardUnificadoType {
+    console.log('🔄 === INICIANDO CONVERSÃO PARA DASHBOARD UNIFICADO ===')
+    console.log('📊 Total de tarefas recebidas:', dashboardData.todasTarefas.length)
     
-    const unifiedData: DashboardUnificadoType = {}
-    const obrasAgrupadas = this.agruparObrasPorCodigo(dashboardData.sheets)
+    if (!dashboardData.todasTarefas || dashboardData.todasTarefas.length === 0) {
+      console.log('⚠️ Nenhuma tarefa encontrada')
+      return {
+        obras: [],
+        metricas: this.criarMetricasVazias(),
+        ultimaAtualizacao: new Date().toISOString()
+      }
+    }
+
+    // 📑 AGRUPAR TAREFAS POR ABA usando _aba (BaseObraData)
+    const abasPorNome = this.agruparPorAba(dashboardData.todasTarefas)
+    console.log('📋 Abas encontradas:', Object.keys(abasPorNome))
+
+    // 🔗 IDENTIFICAR PARES F+E - PADRÃO REAL: -CR-F e -CR-E
+    const paresObras = this.identificarParesObras(abasPorNome)
+    console.log('🔗 Pares F+E identificados:', paresObras.length)
+
+    // 🏗️ CRIAR OBRAS UNIFICADAS
+    const obras = paresObras.map(par => this.criarObraUnificada(par, abasPorNome))
+    console.log('🎯 Total de obras unificadas criadas:', obras.length)
+
+    // 📊 CALCULAR MÉTRICAS GERAIS
+    const metricas = this.calcularMetricasGerais(obras)
+
+    return {
+      obras,
+      metricas,
+      ultimaAtualizacao: new Date().toISOString()
+    }
+  }
+
+  // 📑 AGRUPAR TAREFAS POR ABA - USAR _aba DO BaseObraData
+  private static agruparPorAba(tasks: BaseObraData[]): Record<string, BaseObraData[]> {
+    const abasPorNome: Record<string, BaseObraData[]> = {}
     
-    Object.entries(obrasAgrupadas).forEach(([codigoObra, dados]) => {
-      console.log(`📋 Processando obra: ${codigoObra}`)
-      
-      const { tarefasF, tarefasE, nomeReal, temEnergizacao } = dados
-      const todasTarefas = [...tarefasF, ...tarefasE]
-      
-      if (todasTarefas.length === 0) return
-      
-      // Converter BaseObraData para TaskData
-      const taskDataList: TaskData[] = todasTarefas.map(tarefa => ({
-        'EDT': String(tarefa.EDT),
-        'Nome da Tarefa': tarefa.Nome_da_Tarefa,
-        'Nível': tarefa.N_vel,
-        'Resumo (pai)': tarefa.Resumo__pai_,
-        'Marco': tarefa.Marco || null,
-        'Data Início': tarefa.Data_In_cio,
-        'Data Término': tarefa.Data_T_rmino,
-        '% Concluído': tarefa.__Conclu_do,
-        'LinhaBase Início': Number(tarefa.LinhaBase_In_cio) || 0,
-        'LinhaBase Término': Number(tarefa.LinhaBase_T_rmino) || 0,
-        'Predecessoras': tarefa.Predecessoras || null,
-        'Sucessoras': tarefa.Sucessoras || null,
-        'Anotações': tarefa.Anotacoes || null,
-        'Nomes dos Recursos': tarefa.Nomes_dos_Recursos || null,
-        'Coordenada': tarefa.Coordenada || null
-      }))
-      
-      // Calcular métricas
-      const metricas = this.calcularMetricas(taskDataList, temEnergizacao)
-      
-      // Criar dados de fiscalização
-      const fiscalizacao: FiscalizacaoData = {
-        tarefas: tarefasF.map(t => this.baseObraToTaskData(t)),
-        progressoFornecimentos: this.calcularProgressoFornecimentos(tarefasF)
+    tasks.forEach(task => {
+      const aba = task._aba || 'Sem_Aba'
+      if (!abasPorNome[aba]) {
+        abasPorNome[aba] = []
       }
-      
-      // Criar dados de execução
-      const execucao: ExecucaoData = {
-        tarefas: tarefasE.map(t => this.baseObraToTaskData(t)),
-        progressoExecucao: this.calcularProgressoExecucao(tarefasE)
-      }
-      
-      // ✅ Criar obra unificada e usar imediatamente
-      const obraUnificada: ObraUnificada = {
-        codigo: codigoObra,
-        nome: nomeReal,
-        temEnergizacao,
-        fiscalizacao,
-        execucao,
-        metricas
-      }
-      
-      // ✅ USAR a obra criada
-      unifiedData[codigoObra] = obraUnificada
-      console.log(`   ✅ ${taskDataList.length} tarefas processadas para ${obraUnificada.nome}`)
+      abasPorNome[aba].push(task)
     })
     
-    console.log(`✅ Conversão concluída: ${Object.keys(unifiedData).length} obras`)
-    return unifiedData
+    return abasPorNome
   }
-  
-  private static agruparObrasPorCodigo(sheets: { [key: string]: BaseObraData[] }): {
-    [key: string]: {
-      tarefasF: BaseObraData[]
-      tarefasE: BaseObraData[]
-      nomeReal: string
-      temEnergizacao: boolean
-    }
-  } {
-    const grupos: {
-      [key: string]: {
-        tarefasF: BaseObraData[]
-        tarefasE: BaseObraData[]
-        nomeReal: string
-        temEnergizacao: boolean
-      }
-    } = {}
+
+  // 🔗 IDENTIFICAR PARES F+E - INCLUIR OBRAS SÓ COM F
+  private static identificarParesObras(abasPorNome: Record<string, BaseObraData[]>): Array<{nomeBase: string, abaF: string, abaE: string | null}> {
+    const abas = Object.keys(abasPorNome).filter(aba => aba !== 'Planilha1') // Filtrar Planilha1
+    const pares: Array<{nomeBase: string, abaF: string, abaE: string | null}> = []
     
-    Object.entries(sheets).forEach(([nomeAba, tarefas]) => {
-      const codigoObra = nomeAba.replace(/ - [FE]$/, '')
-      const tipoAba = nomeAba.endsWith(' - F') ? 'F' : 'E'
+    console.log('🔍 Analisando abas para pares F+E:', abas)
+    
+    // Buscar padrão: OBRA-CR-F + OBRA-CR-E (ou só F se não tiver E)
+    const abasF = abas.filter(aba => aba.endsWith('-CR-F'))
+    
+    abasF.forEach(abaF => {
+      // CEPV_RRE-9395-764000-1-CR-F -> CEPV_RRE-9395-764000-1-CR-E
+      const nomeBase = abaF.slice(0, -5) // Remove "-CR-F"
+      const abaE = `${nomeBase}-CR-E`
       
-      if (!grupos[codigoObra]) {
-        grupos[codigoObra] = {
-          tarefasF: [],
-          tarefasE: [],
-          nomeReal: codigoObra,
-          temEnergizacao: false
-        }
-      }
-      
-      // Extrair nome real da primeira tarefa nível 1 (se for F)
-      if (tipoAba === 'F' && !grupos[codigoObra].nomeReal) {
-        const primeiraResumo = tarefas.find(t => t.N_vel === 1)
-        if (primeiraResumo) {
-          grupos[codigoObra].nomeReal = primeiraResumo.Resumo__pai_ || primeiraResumo.Nome_da_Tarefa
-        }
-      }
-      
-      // Detectar energização
-      const temEnergizacao = tarefas.some(t => 
-        t.Nome_da_Tarefa.toLowerCase().includes('energização') ||
-        t.Nome_da_Tarefa.toLowerCase().includes('energizacao')
-      )
-      
-      if (temEnergizacao) {
-        grupos[codigoObra].temEnergizacao = true
-      }
-      
-      // Adicionar tarefas por tipo
-      if (tipoAba === 'F') {
-        grupos[codigoObra].tarefasF = tarefas
+      if (abas.includes(abaE)) {
+        // Par completo F+E
+        pares.push({ nomeBase, abaF, abaE })
+        console.log(`🔗 Par F+E encontrado: ${nomeBase}`)
+        console.log(`   F: ${abaF}`)
+        console.log(`   E: ${abaE}`)
       } else {
-        grupos[codigoObra].tarefasE = tarefas
+        // Só F (sem E)
+        pares.push({ nomeBase, abaF, abaE: null })
+        console.log(`📋 Só Fiscalização: ${nomeBase}`)
+        console.log(`   F: ${abaF}`)
+        console.log(`   E: (não existe)`)
       }
     })
     
-    return grupos
+    console.log(`📊 Total de obras encontradas: ${pares.length}`)
+    return pares
   }
-  
-  private static baseObraToTaskData(tarefa: BaseObraData): TaskData {
-    return {
-      'EDT': String(tarefa.EDT),
-      'Nome da Tarefa': tarefa.Nome_da_Tarefa,
-      'Nível': tarefa.N_vel,
-      'Resumo (pai)': tarefa.Resumo__pai_,
-      'Marco': tarefa.Marco || null,
-      'Data Início': tarefa.Data_In_cio,
-      'Data Término': tarefa.Data_T_rmino,
-      '% Concluído': tarefa.__Conclu_do,
-      'LinhaBase Início': Number(tarefa.LinhaBase_In_cio) || 0,
-      'LinhaBase Término': Number(tarefa.LinhaBase_T_rmino) || 0,
-      'Predecessoras': tarefa.Predecessoras || null,
-      'Sucessoras': tarefa.Sucessoras || null,
-      'Anotações': tarefa.Anotacoes || null,
-      'Nomes dos Recursos': tarefa.Nomes_dos_Recursos || null,
-      'Coordenada': tarefa.Coordenada || null
+
+  // 🏗️ CRIAR OBRA UNIFICADA - SUPORTA OBRAS SÓ COM F
+  private static criarObraUnificada(
+    par: {nomeBase: string, abaF: string, abaE: string | null}, 
+    abasPorNome: Record<string, BaseObraData[]>
+  ): ObraUnificada {
+    const tarefasF = abasPorNome[par.abaF] || []
+    const tarefasE = par.abaE ? (abasPorNome[par.abaE] || []) : []
+    
+    console.log(`🏗️ Criando obra: ${par.nomeBase}`)
+    console.log(`   📊 Tarefas F: ${tarefasF.length}, Tarefas E: ${tarefasE.length}`)
+
+    // 📝 OBTER NOME REAL DA OBRA - LIMPO
+    const temExecucao = tarefasE.length > 0
+    const nomeReal = this.obterNomeRealObra(tarefasF)
+    
+    // 🏷️ CRIAR CÓDIGO COM INDICADOR F/E
+    const indicador = temExecucao ? '[F+E]' : '[F]'
+    const codigoComIndicador = `${par.nomeBase} ${indicador}`
+    
+    // 📊 CALCULAR MÉTRICAS
+    const progressoGeral = this.calcularProgressoGeral(tarefasF, tarefasE)
+    const avancaoFisico = this.calcularAvancaoFisico(tarefasF, tarefasE)
+    const temEnergizacao = this.detectarEnergizacao(tarefasF, tarefasE)
+    const status = this.determinarStatus(temEnergizacao, avancaoFisico, tarefasE.length > 0)
+    
+    // 🏗️ CRIAR DADOS DE FISCALIZAÇÃO E EXECUÇÃO
+    const fiscalizacao = this.criarDadosFiscalizacao(tarefasF)
+    const execucao = this.criarDadosExecucao(tarefasE)
+    const totalTarefas = tarefasF.length + tarefasE.length
+    const tarefasConcluidas = fiscalizacao.tarefasConcluidas + execucao.tarefasConcluidas
+    const totalMarcos = fiscalizacao.totalMarcos + execucao.totalMarcos
+    const marcosConcluidos = fiscalizacao.marcosConcluidos + execucao.marcosConcluidos
+    
+    const obra: ObraUnificada = {
+      codigo: codigoComIndicador,           // ✅ Código com indicador [F] ou [F+E]
+      nome: nomeReal,                       // ✅ Nome limpo sem indicador
+      status: status,
+      progressoGeral: progressoGeral,
+      avancooFisico: avancaoFisico,        // ✅ Nome que ListaObrasUnificadas.tsx espera
+      avancaoFisico: avancaoFisico,        // ✅ Alias para compatibilidade
+      tarefasConcluidas: tarefasConcluidas,
+      totalTarefas: totalTarefas,
+      marcos: {
+        total: totalMarcos,
+        concluidos: marcosConcluidos
+      },
+      metricas: {
+        progressoGeral: progressoGeral,
+        avancooFisico: avancaoFisico,
+        totalTarefas: totalTarefas,
+        tarefasConcluidas: tarefasConcluidas,
+        totalMarcos: totalMarcos,
+        marcosConcluidos: marcosConcluidos
+      },
+      temEnergizacao: temEnergizacao,
+      fiscalizacao: {
+        tarefas: tarefasF as any[], // Cast para compatibilidade
+        progressoFornecimentos: fiscalizacao.progressoGeral,
+        tarefasConcluidas: fiscalizacao.tarefasConcluidas,
+        totalTarefas: fiscalizacao.totalTarefas
+      },
+      execucao: {
+        tarefas: tarefasE as any[], // Cast para compatibilidade
+        progressoExecucao: execucao.progressoGeral,
+        tarefasConcluidas: execucao.tarefasConcluidas,
+        totalTarefas: execucao.totalTarefas
+      }
     }
+    
+    console.log(`✅ Obra criada: ${obra.nome}`)
+    console.log(`   Status: ${obra.status}`)
+    console.log(`   Progresso: ${obra.progressoGeral}%`)
+    console.log(`   Avanço Físico: ${obra.avancaoFisico}%`)
+    console.log(`   Tem Execução: ${tarefasE.length > 0 ? 'SIM' : 'NÃO'}`)
+    
+    return obra
   }
-  
-  private static calcularMetricas(tarefas: TaskData[], temEnergizacao: boolean): MetricasObra {
-    const tarefasExecutaveis = tarefas.filter(t => t['Nível'] > 1)
-    const tarefasConcluidas = tarefasExecutaveis.filter(t => t['% Concluído'] === 100)
+
+  // 📝 OBTER NOME REAL DA OBRA - SEM INDICADOR (vai no código)
+  private static obterNomeRealObra(tarefasF: BaseObraData[]): string {
+    console.log(`🔍 Buscando nome real da obra em ${tarefasF.length} tarefas de Fiscalização...`)
     
-    const progressoGeral = tarefasExecutaveis.length > 0 
-      ? (tarefasConcluidas.length / tarefasExecutaveis.length) * 100 
-      : 0
+    // Buscar primeira tarefa nível 1 e pegar o Resumo_pai
+    const tarefaNivel1 = tarefasF.find(t => t.N_vel === 1)
     
-    // Avanço físico baseado em marcos ou progresso geral
-    let avanceFisico = 0
-    if (temEnergizacao) {
-      const marcos = tarefas.filter(t => t.Marco?.toLowerCase() === 'sim' && t['% Concluído'] === 100)
-      const totalMarcos = tarefas.filter(t => t.Marco?.toLowerCase() === 'sim')
-      avanceFisico = totalMarcos.length > 0 ? (marcos.length / totalMarcos.length) * 100 : 0
+    if (tarefaNivel1 && tarefaNivel1.Resumo_pai) {
+      const nome = tarefaNivel1.Resumo_pai
+      console.log(`✅ Nome encontrado no Resumo (pai): ${nome}`)
+      return nome
+    }
+    
+    // Fallback: qualquer tarefa com Resumo_pai preenchido
+    const tarefaComResumo = tarefasF.find(t => t.Resumo_pai && t.Resumo_pai.trim())
+    if (tarefaComResumo && tarefaComResumo.Resumo_pai) {
+      const nome = tarefaComResumo.Resumo_pai
+      console.log(`⚠️ Nome fallback do Resumo (pai): ${nome}`)
+      return nome
+    }
+    
+    console.log(`❌ Nenhum nome encontrado no Resumo (pai), usando nome genérico`)
+    return 'Obra sem nome'
+  }
+
+  // 📊 CALCULAR PROGRESSO GERAL - USANDO Porcentagem_Conclu_do
+  private static calcularProgressoGeral(tarefasF: BaseObraData[], tarefasE: BaseObraData[]): number {
+    const todasTarefas = [...tarefasF, ...tarefasE]
+    if (todasTarefas.length === 0) return 0
+    
+    const somaProgressos = todasTarefas.reduce((acc, t) => {
+      const progresso = Number(t.Porcentagem_Conclu_do) || 0
+      return acc + progresso
+    }, 0)
+    
+    const progressoMedio = somaProgressos / todasTarefas.length
+    console.log(`📊 Progresso geral calculado: ${progressoMedio.toFixed(1)}%`)
+    return Math.round(progressoMedio)
+  }
+
+  // 📊 CALCULAR AVANÇO FÍSICO - USANDO Marco e Porcentagem_Conclu_do
+  private static calcularAvancaoFisico(tarefasF: BaseObraData[], tarefasE: BaseObraData[]): number {
+    const todasTarefas = [...tarefasF, ...tarefasE]
+    
+    console.log(`📊 Calculando avanço físico para ${todasTarefas.length} tarefas...`)
+    
+    // Buscar marcos usando coluna Marco
+    const marcos = todasTarefas.filter(t => {
+      const marco = t.Marco
+      if (!marco) return false
+      const marcoStr = String(marco).toLowerCase()
+      return marcoStr === 'sim' || marcoStr === '1' || marcoStr === 'true'
+    })
+    
+    console.log(`📋 Marcos encontrados: ${marcos.length}`)
+    
+    if (marcos.length > 0) {
+      const marcosConcluidos = marcos.filter(m => Number(m.Porcentagem_Conclu_do) >= 100)
+      const avanco = marcos.length > 0 ? (marcosConcluidos.length / marcos.length) * 100 : 0
+      console.log(`🎯 Avanço físico (marcos): ${marcosConcluidos.length}/${marcos.length} = ${avanco.toFixed(1)}%`)
+      return Math.round(avanco)
+    }
+    
+    // Fallback: tarefas 100% concluídas
+    const tarefasConcluidas = todasTarefas.filter(t => Number(t.Porcentagem_Conclu_do) >= 100)
+    const avanco = todasTarefas.length > 0 ? (tarefasConcluidas.length / todasTarefas.length) * 100 : 0
+    console.log(`🎯 Avanço físico (fallback): ${tarefasConcluidas.length}/${todasTarefas.length} = ${avanco.toFixed(1)}%`)
+    return Math.round(avanco)
+  }
+
+  // 🔍 DETECTAR ENERGIZAÇÃO - ANÁLISE AVANÇADA
+  private static detectarEnergizacao(tarefasF: BaseObraData[], tarefasE: BaseObraData[]): boolean {
+    const todasTarefas = [...tarefasF, ...tarefasE]
+    
+    // ⚡ PALAVRAS-CHAVE DE ENERGIZAÇÃO (mais abrangente)
+    const palavrasEnergia = [
+      'energização', 'energizacao', 'energizar',
+      'comissionamento', 'comissionar',
+      'montagem', 'montagens',
+      'teste', 'testes', 'ensaio', 'ensaios',
+      'ativação', 'ativar',
+      'operação', 'operacional',
+      'funcionamento',
+      'subestação', 'subestacao', 'se ',
+      'transformador', 'trafo',
+      'disjuntor', 'seccionador',
+      'linha de transmissão', 'lt ',
+      'equipamento', 'equipamentos'
+    ]
+    
+    // 🏗️ VERIFICAR NOMES DE TAREFAS
+    const temEnergia = todasTarefas.some(t => {
+      const nome = t.Nome_da_Tarefa ? String(t.Nome_da_Tarefa).toLowerCase() : ''
+      const resumo = t.Resumo_pai ? String(t.Resumo_pai).toLowerCase() : ''
+      const textoCompleto = `${nome} ${resumo}`
+      
+      return palavrasEnergia.some(palavra => textoCompleto.includes(palavra))
+    })
+    
+    console.log(`⚡ Energização detectada: ${temEnergia ? 'SIM' : 'NÃO'}`)
+    if (temEnergia) {
+      console.log(`   🔍 Palavras encontradas no texto das tarefas`)
+    }
+    
+    return temEnergia
+  }
+
+  // 🎯 SISTEMA HÍBRIDO: CRONOGRAMA + ETAPA GERENCIAL
+  private static determinarStatus(temEnergizacao: boolean, avancaoFisico: number, temExecucao: boolean): string {
+    console.log(`🎯 Determinando status híbrido: Avanço=${avancaoFisico}%, Energização=${temEnergizacao}, Execução=${temExecucao}`)
+    
+    // ✅ OBRA CONCLUÍDA
+    if (avancaoFisico >= 100) {
+      return 'Concluído'
+    }
+    
+    // ❌ OBRA NÃO INICIADA
+    if (avancaoFisico === 0) {
+      return 'Não Iniciado'
+    }
+    
+    // 📊 ANÁLISE DE CRONOGRAMA (baseado em benchmarks típicos)
+    let statusCronograma = ''
+    
+    // Lógica simplificada: obras com >60% avanço físico são consideradas "adiantadas"
+    // obras entre 30-60% "no prazo", <30% com execução são "atrasadas"
+    if (temExecucao) {
+      if (avancaoFisico >= 60) {
+        statusCronograma = 'Adiantado'
+      } else if (avancaoFisico >= 30) {
+        statusCronograma = 'No Prazo'
+      } else {
+        statusCronograma = 'Atrasado'
+      }
     } else {
-      avanceFisico = progressoGeral
+      // Obras só com fiscalização têm critério diferente
+      if (avancaoFisico >= 70) {
+        statusCronograma = 'Adiantado'
+      } else if (avancaoFisico >= 40) {
+        statusCronograma = 'No Prazo'
+      } else {
+        statusCronograma = 'Atrasado'
+      }
     }
+    
+    // 📋 DETERMINAÇÃO DA ETAPA GERENCIAL
+    let etapaGerencial = ''
+    
+    // 📋 OBRAS SÓ COM FISCALIZAÇÃO
+    if (!temExecucao) {
+      if (avancaoFisico >= 80) {
+        etapaGerencial = 'Aprovação Final'
+      } else if (avancaoFisico >= 60) {
+        etapaGerencial = 'Análise Avançada'
+      } else if (avancaoFisico >= 30) {
+        etapaGerencial = 'Projeto Executivo'
+      } else {
+        etapaGerencial = 'Procedimentos Preliminares'
+      }
+    }
+    // ⚡ OBRAS COM ENERGIZAÇÃO (subestações, linhas)
+    else if (temEnergizacao) {
+      if (avancaoFisico >= 80) {
+        etapaGerencial = 'Fase de Testes'
+      } else if (avancaoFisico >= 60) {
+        etapaGerencial = 'Comissionamento'
+      } else if (avancaoFisico >= 40) {
+        etapaGerencial = 'Execução em Andamento'
+      } else if (avancaoFisico >= 20) {
+        etapaGerencial = 'Projeto Executivo'
+      } else {
+        etapaGerencial = 'Procedimentos Preliminares'
+      }
+    }
+    // 🏗️ OBRAS SEM ENERGIZAÇÃO (reformas, ampliações)
+    else {
+      if (avancaoFisico >= 75) {
+        etapaGerencial = 'Fase de Testes'
+      } else if (avancaoFisico >= 50) {
+        etapaGerencial = 'Execução em Andamento'
+      } else if (avancaoFisico >= 25) {
+        etapaGerencial = 'Projeto Executivo'
+      } else {
+        etapaGerencial = 'Procedimentos Preliminares'
+      }
+    }
+    
+    // 🎯 COMBINAR CRONOGRAMA + ETAPA
+    const statusFinal = `${statusCronograma} - ${etapaGerencial}`
+    
+    console.log(`   📊 Status Cronograma: ${statusCronograma}`)
+    console.log(`   📋 Etapa Gerencial: ${etapaGerencial}`)
+    console.log(`   🎯 Status Final: ${statusFinal}`)
+    
+    return statusFinal
+  }
+
+  // 🏗️ CRIAR DADOS FISCALIZAÇÃO
+  private static criarDadosFiscalizacao(tarefasF: BaseObraData[]) {
+    const total = tarefasF.length
+    const concluidas = tarefasF.filter(t => Number(t.Porcentagem_Conclu_do) >= 100).length
+    const marcos = tarefasF.filter(t => {
+      if (!t.Marco) return false
+      const marcoStr = String(t.Marco).toLowerCase()
+      return marcoStr === 'sim' || marcoStr === '1' || marcoStr === 'true'
+    }).length
+    const marcosConcluidos = tarefasF.filter(t => {
+      if (!t.Marco) return false
+      const marcoStr = String(t.Marco).toLowerCase()
+      const isMarco = marcoStr === 'sim' || marcoStr === '1' || marcoStr === 'true'
+      return isMarco && Number(t.Porcentagem_Conclu_do) >= 100
+    }).length
     
     return {
-      progressoGeral: Math.round(progressoGeral),
-      avanceFisico: Math.round(avanceFisico),
-      totalTarefas: tarefas.length,
-      tarefasConcluidas: tarefasConcluidas.length,
-      totalMarcos: tarefas.filter(t => t.Marco?.toLowerCase() === 'sim').length,
-      marcosConcluidos: tarefas.filter(t => t.Marco?.toLowerCase() === 'sim' && t['% Concluído'] === 100).length
+      totalTarefas: total,
+      tarefasConcluidas: concluidas,
+      progressoGeral: total > 0 ? Math.round((concluidas / total) * 100) : 0,
+      totalMarcos: marcos,
+      marcosConcluidos: marcosConcluidos
     }
   }
-  
-  // ✅ CORRIGIDO: Método que faltava
-  private static calcularProgressoFornecimentos(tarefasF: BaseObraData[]): number {
-    if (tarefasF.length === 0) return 0
+
+  // ⚡ CRIAR DADOS EXECUÇÃO
+  private static criarDadosExecucao(tarefasE: BaseObraData[]) {
+    const total = tarefasE.length
+    const concluidas = tarefasE.filter(t => Number(t.Porcentagem_Conclu_do) >= 100).length
+    const marcos = tarefasE.filter(t => {
+      if (!t.Marco) return false
+      const marcoStr = String(t.Marco).toLowerCase()
+      return marcoStr === 'sim' || marcoStr === '1' || marcoStr === 'true'
+    }).length
+    const marcosConcluidos = tarefasE.filter(t => {
+      if (!t.Marco) return false
+      const marcoStr = String(t.Marco).toLowerCase()
+      const isMarco = marcoStr === 'sim' || marcoStr === '1' || marcoStr === 'true'
+      return isMarco && Number(t.Porcentagem_Conclu_do) >= 100
+    }).length
     
-    const executaveis = tarefasF.filter(t => t.N_vel > 1)
-    const concluidas = executaveis.filter(t => t.__Conclu_do === 100)
-    
-    return executaveis.length > 0 ? (concluidas.length / executaveis.length) * 100 : 0
+    return {
+      totalTarefas: total,
+      tarefasConcluidas: concluidas,
+      progressoGeral: total > 0 ? Math.round((concluidas / total) * 100) : 0,
+      totalMarcos: marcos,
+      marcosConcluidos: marcosConcluidos
+    }
   }
-  
-  // ✅ CORRIGIDO: Método que faltava
-  private static calcularProgressoExecucao(tarefasE: BaseObraData[]): number {
-    if (tarefasE.length === 0) return 0
-    
-    const executaveis = tarefasE.filter(t => t.N_vel > 1)
-    const concluidas = executaveis.filter(t => t.__Conclu_do === 100)
-    
-    return executaveis.length > 0 ? (concluidas.length / executaveis.length) * 100 : 0
+
+  // ✅ CALCULAR MÉTRICAS GERAIS
+  private static calcularMetricasGerais(obras: ObraUnificada[]): MetricasGerais {
+    const totalObras = obras.length
+    const obrasConcluidas = obras.filter(o => o.progressoGeral >= 100).length
+    const obrasEmAndamento = obras.filter(o => o.progressoGeral > 0 && o.progressoGeral < 100).length
+    const progressoMedio = totalObras > 0 ? Math.round(obras.reduce((acc, o) => acc + o.progressoGeral, 0) / totalObras) : 0
+    const atrasadas = 0 // Implementar lógica de atraso se necessário
+    const prazo = totalObras - atrasadas
+    const totalMarcosFisicos = obras.reduce((acc, o) => acc + (o.marcos?.total || 0), 0)
+    const marcosFisicosConcluidos = obras.reduce((acc, o) => acc + (o.marcos?.concluidos || 0), 0)
+    const mediaAvancaoFisico = totalObras > 0 ? Math.round(obras.reduce((acc, o) => acc + (o.avancaoFisico || 0), 0) / totalObras) : 0
+
+    return {
+      totalObras,
+      obrasConcluidas,
+      obrasEmAndamento,
+      progressoMedio,
+      atrasadas,
+      prazo,
+      totalMarcosFisicos,
+      marcosFisicosConcluidos,
+      mediaAvancaoFisico,
+      mediaaProgressoGeral: progressoMedio,
+      mediaaAvancaoFisico: mediaAvancaoFisico
+    }
+  }
+
+  // 📊 MÉTRICAS VAZIAS PARA CASO DE ERRO
+  private static criarMetricasVazias(): MetricasGerais {
+    return {
+      totalObras: 0,
+      obrasConcluidas: 0,
+      obrasEmAndamento: 0,
+      progressoMedio: 0,
+      atrasadas: 0,
+      prazo: 0,
+      totalMarcosFisicos: 0,
+      marcosFisicosConcluidos: 0,
+      mediaAvancaoFisico: 0,
+      mediaaProgressoGeral: 0,
+      mediaaAvancaoFisico: 0
+    }
   }
 }

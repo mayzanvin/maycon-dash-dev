@@ -1,61 +1,61 @@
-// src/types/obra.ts - CORREÇÃO DO ERRO lastUpdated
+// src/types/obra.ts - TIPOS BASE ATUALIZADOS COM 5 COLUNAS ADICIONAIS
 
 export interface BaseObraData {
-  EDT: number | string;
-  Nome_da_Tarefa: string;
-  N_vel: number;
-  Resumo__pai_: string;
-  Marco?: string;
-  Data_In_cio: number;
-  Data_T_rmino: number;
-  __Conclu_do: number;
-  LinhaBase_In_cio: number | string;
-  LinhaBase_T_rmino: number | string;
-  // ✅ AS 5 COLUNAS IMPORTANTES ADICIONADAS
-  Predecessoras?: string;
-  Sucessoras?: string;
-  Anotacoes?: string;
-  Nomes_dos_Recursos?: string;
-  Coordenada?: string;
-}
-
-export interface Planilha1Data extends BaseObraData {}
-
-export interface R87LRREVAR7640002CRFData extends BaseObraData {}
-
-export interface SEPVRRE0957640001CRFData extends BaseObraData {}
-
-export interface SESCRRE0987640003CRFData extends BaseObraData {}
-
-export interface SESCRRE0987640003CREData extends BaseObraData {}
-
-export interface ObraMetrics {
-  totalObras: number;
-  obrasConcluidas: number;
-  obrasEmAndamento: number;
-  obrasPendentes: number;
-  valorTotal: number;
-  valorGasto: number;
+  EDT: string | number
+  Nome_da_Tarefa: string
+  N_vel: number
+  Resumo_pai?: string
+  Data_In_cio: number | string
+  Data_T_rmino: number | string
+  Porcentagem_Conclu_do: number
+  LinhaBase_In_cio?: number | string
+  LinhaBase_T_rmino?: number | string
+  
+  // ✅ 5 COLUNAS ADICIONAIS IMPORTANTES:
+  Predecessoras?: string | null     // Dependências da tarefa
+  Sucessoras?: string | null        // Tarefas dependentes
+  Marco?: string | null             // "SIM" para marcos físicos
+  Anota_es?: string | null          // Informações extras
+  Nomes_dos_Recursos?: string | null // Equipes (DTE, ENW, etc.)
+  Coordenada?: string | null        // Para localização no mapa
+  
+  _aba?: string // Identificação da aba de origem
 }
 
 export interface ExcelData {
-  [sheetName: string]: BaseObraData[];
+  [sheetName: string]: BaseObraData[]
 }
 
 export interface DashboardData {
-  sheets: ExcelData;
-  metrics: ObraMetrics;
-  sheetNames: string[];
-  lastUpdated: string;  // ✅ CORRIGIDO: Propriedade que faltava
+  todasTarefas: BaseObraData[]
+  obrasPorAba: ExcelData
+  ultimaAtualizacao?: string
 }
 
-// Nomes das planilhas encontradas
-export const SHEET_NAMES = [
-  "Planilha1",
-  "R87L_RRE-VAR-764000-2-CR - F",
-  "SEPV_RRE-095-764000-1-CR - F",
-  "SESC_RRE-098-764000-3-CR - F",
-  "SESC_RRE-098-764000-3-CR - E"
-] as const;
+export interface ObraMetrics {
+  totalTarefas: number
+  tarefasConcluidas: number
+  progressoMedio: number
+  avancaoFisico: number
+  marcos: {
+    total: number
+    concluidos: number
+  }
+}
 
-export type SheetName = typeof SHEET_NAMES[number];
+// Interface para compatibilidade com componentes existentes
+export interface Obra {
+  id: string
+  nome: string
+  progresso: number
+  status: string
+  dataInicio: string
+  dataTermino: string
+  responsavel: string
+  localizacao: string
+  avancaoFisico: number
+  marcos: {
+    total: number
+    concluidos: number
+  }
+}

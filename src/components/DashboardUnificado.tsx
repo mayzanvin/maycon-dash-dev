@@ -1,6 +1,6 @@
-// src/components/DashboardUnificado.tsx - CORRIGIDO PARA ELIMINAR ERROS
+// src/components/DashboardUnificado.tsx - COMPATÍVEL COM DADOS REAIS
 import { useState } from 'react'
-import { DashboardUnificadoType, MetricasGerais, ObraUnificada } from '@/types/obra-unificada'
+import { DashboardUnificadoType, ObraUnificada } from '@/types/obra-unificada'
 import MetricasObras from './MetricasObras'
 import ListaObrasUnificadas from './ListaObrasUnificadas'
 import GraficosUnificados from './GraficosUnificados'
@@ -25,29 +25,9 @@ const DashboardUnificado: React.FC<DashboardUnificadoProps> = ({ data }) => {
     preto: '#000000'
   }
 
-  // Calcular métricas gerais
-  const obras = Object.values(data)
-  const obrasComExecucao = obras.filter(obra => obra.execucao.totalTarefas > 0)
-
-  // ✅ CORRIGIDO: Nomes padronizados
-  const metricas: MetricasGerais = {
-    totalObras: obras.length,
-    obrasComExecucao: obrasComExecucao.length,
-    mediaProgressoGeral: obras.length > 0 
-      ? Math.round(obras.reduce((sum, obra) => sum + obra.metricas.progressoGeral, 0) / obras.length)
-      : 0,
-    mediaAvancaoFisico: obrasComExecucao.length > 0
-      ? Math.round(obrasComExecucao.reduce((sum, obra) => sum + obra.metricas.avanceFisico, 0) / obrasComExecucao.length)
-      : 0,
-    totalMarcosFisicos: obras.reduce((sum, obra) => sum + obra.metricas.totalMarcos, 0),
-    marcosFisicosConcluidos: obras.reduce((sum, obra) => sum + obra.metricas.marcosConcluidos, 0)
-  }
-
-  const getFilteredData = () => {
-    return obras
-  }
-
-  const filteredObras = getFilteredData()
+  // ✅ CORRIGIDO: Usar data.obras em vez de Object.values(data)
+  const obras = data.obras
+  const metricas = data.metricas
 
   const handleObraClick = (obra: ObraUnificada) => {
     setObraSelecionadaModal(obra)
@@ -210,15 +190,14 @@ const DashboardUnificado: React.FC<DashboardUnificadoProps> = ({ data }) => {
             ANÁLISE VISUAL
           </h2>
           
-          {/* ✅ CORRIGIDO: Passando array de obras em vez de data */}
           <GraficosUnificados 
-            obras={filteredObras} 
+            obras={obras} 
             onObraClick={handleObraClick} 
           />
         </div>
 
         <ListaObrasUnificadas 
-          obras={filteredObras}
+          obras={obras}
           showAll={true}
           onObraClick={handleObraClick}
         />

@@ -15,6 +15,7 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
     laranja: '#FF6B35',
     vermelho: '#EF4444',
     amarelo: '#F59E0B',
+    roxo: '#8b5cf6',
     preto: '#000000',
     cinza: '#374151',
     cinzaClaro: '#6B7280'
@@ -37,17 +38,51 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
     )
   }
 
-  const getCorProgresso = (progresso: number) => {
-    if (progresso >= 80) return coresRoraima.verde
-    if (progresso >= 50) return coresRoraima.amarelo
-    return coresRoraima.vermelho
-  }
-
-  const getStatusText = (progresso: number) => {
-    if (progresso >= 80) return 'Avançado'
-    if (progresso >= 50) return 'Em Andamento'
-    if (progresso > 0) return 'Iniciado'
-    return 'Não Iniciado'
+  // ✅ CORES POR STATUS HÍBRIDO - CRONOGRAMA + ETAPA
+  const getCorStatus = (status: string) => {
+    const statusLower = status.toLowerCase()
+    
+    // 🔍 ANÁLISE POR CRONOGRAMA (prioridade)
+    if (statusLower.includes('adiantado')) {
+      return coresRoraima.verde // Verde para adiantado
+    }
+    if (statusLower.includes('atrasado')) {
+      return coresRoraima.vermelho // Vermelho para atrasado
+    }
+    if (statusLower.includes('no prazo')) {
+      return coresRoraima.azul // Azul para no prazo
+    }
+    
+    // 🔍 ANÁLISE POR ETAPA (se não tem cronograma)
+    if (statusLower.includes('fase de testes')) {
+      return coresRoraima.roxo // Roxo para testes
+    }
+    if (statusLower.includes('execução em andamento')) {
+      return coresRoraima.laranja // Laranja para execução
+    }
+    if (statusLower.includes('projeto executivo')) {
+      return coresRoraima.azul // Azul para projeto
+    }
+    if (statusLower.includes('procedimentos preliminares')) {
+      return coresRoraima.amarelo // Amarelo para preliminares
+    }
+    if (statusLower.includes('comissionamento')) {
+      return coresRoraima.roxo // Roxo para comissionamento
+    }
+    if (statusLower.includes('aprovação final') || statusLower.includes('análise avançada')) {
+      return coresRoraima.verde // Verde para aprovação
+    }
+    
+    // 🔍 STATUS ESPECIAIS
+    if (statusLower.includes('concluído')) {
+      return coresRoraima.verde
+    }
+    if (statusLower.includes('não iniciado')) {
+      return coresRoraima.cinza
+    }
+    
+    // Default
+    return coresRoraima.amarelo
   }
 
   return (
@@ -159,18 +194,19 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
                 </p>
               </div>
               
+              {/* ✅ USAR STATUS REAL DO DATAADAPTER */}
               <div style={{
-                backgroundColor: getCorProgresso(obra.metricas.avancooFisico),
+                backgroundColor: getCorStatus(obra.status),
                 color: '#ffffff',
                 padding: '4px 8px',
                 borderRadius: '6px',
                 fontSize: '11px',
                 fontWeight: '600',
-                minWidth: '70px',
+                minWidth: '80px',
                 textAlign: 'center',
                 fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
               }}>
-                {getStatusText(obra.metricas.avancooFisico)}
+                {obra.status}
               </div>
             </div>
 
@@ -251,7 +287,7 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
                   fontSize: '24px', 
                   fontWeight: 'bold', 
                   color: coresRoraima.verde,
-                  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+                  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segue UI", Roboto, Helvetica, Arial, sans-serif'
                 }}>
                   {obra.metricas.avancooFisico}%
                 </div>

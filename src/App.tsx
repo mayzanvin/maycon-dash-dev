@@ -1,17 +1,17 @@
-// src/App.tsx - SEM WARNINGS
+// src/App.tsx - DESIGN ORIGINAL COM HEADER CORRETO
 import { useState } from 'react'
 import { RefreshCw, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
 import { useBaseObras } from '@/hooks/useBaseObras'
 import DashboardUnificado from '@/components/DashboardUnificado'
 
 function App() {
-  const { data, loading, error, refreshData } = useBaseObras()
+  const { data, loading, error, refetch } = useBaseObras()
   const [refreshing, setRefreshing] = useState(false)
 
   const handleRefresh = async () => {
     setRefreshing(true)
     try {
-      await refreshData()
+      await refetch()
     } finally {
       setRefreshing(false)
     }
@@ -93,7 +93,7 @@ function App() {
                   fontSize: '11px',
                   color: '#9ca3af'
                 }}>
-                  {Object.keys(data).length} obras carregadas
+                  {data.obras.length} obras carregadas
                 </div>
               )}
             </div>
