@@ -1,7 +1,6 @@
-// src/components/ModalDetalhesObra.tsx - VERSÃO CORRIGIDA
 import { useEffect } from 'react'
 import { ObraUnificada } from '@/types/obra-unificada'
-import { X, Calendar, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react'
+import { X, Calendar, TrendingUp, AlertTriangle, CheckCircle, Building2, Users, Wrench } from 'lucide-react'
 import CurvaTendencia from './CurvaTendencia'
 
 interface ModalDetalhesObraProps {
@@ -10,6 +9,20 @@ interface ModalDetalhesObraProps {
 }
 
 const ModalDetalhesObra: React.FC<ModalDetalhesObraProps> = ({ obra, onClose }) => {
+  // Cores da Roraima Energia (consistente com o dashboard)
+  const coresRoraima = {
+    azul: '#0EA5E9',
+    verde: '#10B981',
+    laranja: '#FF6B35',
+    vermelho: '#EF4444',
+    amarelo: '#F59E0B',
+    roxo: '#8b5cf6',
+    preto: '#000000',
+    cinza: '#374151',
+    cinzaClaro: '#6B7280',
+    branco: '#ffffff'
+  }
+
   // Fechar modal com ESC
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -29,53 +42,80 @@ const ModalDetalhesObra: React.FC<ModalDetalhesObraProps> = ({ obra, onClose }) 
 
   if (!obra) return null
 
+  // ✅ CALCULAR DATAS REAIS COM PROTEÇÃO CONTRA DADOS VAZIOS
   const calcularDatasExtremas = () => {
     const todasTarefas = [...obra.fiscalizacao.tarefas, ...obra.execucao.tarefas]
     
+    if (todasTarefas.length === 0) {
+      return {
+        dataInicio: 0,
+        dataTermino: 0,
+        dataInicioBase: 0,
+        dataTerminoBase: 0,
+        duracaoTotal: 0
+      }
+    }
+    
+    // ✅ FILTRAR DADOS VÁLIDOS CORRETAMENTE
     const datasInicio = todasTarefas
-      .map(t => t['Data Início'])
-      .filter((d): d is number => typeof d === 'number' && d > 0)
+      .map(t => typeof t['Data Início'] === 'number' ? t['Data Início'] : 0)
+      .filter(d => d > 0)
     
     const datasTermino = todasTarefas
-      .map(t => t['Data Término'])
-      .filter((d): d is number => typeof d === 'number' && d > 0)
+      .map(t => typeof t['Data Término'] === 'number' ? t['Data Término'] : 0)
+      .filter(d => d > 0)
     
     const datasBaseInicio = todasTarefas
-      .map(t => t['LinhaBase Início'])
-      .filter((d): d is number => typeof d === 'number' && d > 0)
+      .map(t => typeof t['LinhaBase Início'] === 'number' ? t['LinhaBase Início'] : 0)
+      .filter(d => d > 0)
     
     const datasBaseTermino = todasTarefas
-      .map(t => t['LinhaBase Término'])
-      .filter((d): d is number => typeof d === 'number' && d > 0)
-    
-    const todasDatas = [...datasInicio, ...datasTermino, ...datasBaseInicio, ...datasBaseTermino]
+      .map(t => typeof t['LinhaBase Término'] === 'number' ? t['LinhaBase Término'] : 0)
+      .filter(d => d > 0)
     
     return {
       dataInicio: datasInicio.length > 0 ? Math.min(...datasInicio) : 0,
       dataTermino: datasTermino.length > 0 ? Math.max(...datasTermino) : 0,
       dataInicioBase: datasBaseInicio.length > 0 ? Math.min(...datasBaseInicio) : 0,
       dataTerminoBase: datasBaseTermino.length > 0 ? Math.max(...datasBaseTermino) : 0,
-      duracaoTotal: todasDatas.length > 0 ? Math.max(...todasDatas) - Math.min(...todasDatas) : 0
+      duracaoTotal: 0
     }
   }
 
-  const formatarData = (excelDate: number | undefined): string => {
+  // ✅ FORMATAÇÃO DE DATA MAIS ROBUSTA
+  const formatarData = (excelDate: number): string => {
     if (!excelDate || excelDate <= 0) return 'Não definida'
     
     try {
       const date = new Date((excelDate - 25569) * 86400 * 1000)
+      if (isNaN(date.getTime())) return 'Data inválida'
       return date.toLocaleDateString('pt-BR')
     } catch (error) {
-      console.warn('Erro ao formatar data:', excelDate, error)
       return 'Data inválida'
     }
   }
 
+  // ✅ CORES POR STATUS (igual aos cards)
+  const getCorStatus = (status: string) => {
+    const statusLower = status.toLowerCase()
+    
+    if (statusLower.includes('adiantado')) return coresRoraima.verde
+    if (statusLower.includes('atrasado')) return coresRoraima.vermelho
+    if (statusLower.includes('no prazo')) return coresRoraima.azul
+    if (statusLower.includes('concluído')) return coresRoraima.verde
+    if (statusLower.includes('execução em andamento')) return coresRoraima.laranja
+    if (statusLower.includes('comissionamento')) return coresRoraima.roxo
+    if (statusLower.includes('procedimentos preliminares')) return coresRoraima.amarelo
+    
+    return coresRoraima.azul
+  }
+
   const { dataInicio, dataTermino, dataInicioBase, dataTerminoBase } = calcularDatasExtremas()
   
-  const diasAtraso = dataTermino && dataTerminoBase ? dataTermino - dataTerminoBase : 0
+  // ✅ CÁLCULO DE ATRASO MAIS SEGURO
+  const diasAtraso = (dataTermino > 0 && dataTerminoBase > 0) ? dataTermino - dataTerminoBase : 0
   const statusAtraso = diasAtraso > 0 ? 'Atrasada' : diasAtraso < 0 ? 'Adiantada' : 'No prazo'
-  const corStatus = diasAtraso > 0 ? '#ff4444' : diasAtraso < 0 ? '#00ff88' : '#00d4ff'
+  const corStatus = getCorStatus(obra.status)
 
   return (
     <div style={{
@@ -84,354 +124,350 @@ const ModalDetalhesObra: React.FC<ModalDetalhesObraProps> = ({ obra, onClose }) 
       left: 0,
       right: 0,
       bottom: 0,
-      background: 'radial-gradient(circle at center, rgba(10, 14, 26, 0.95) 0%, rgba(0, 0, 0, 0.98) 100%)',
-      backdropFilter: 'blur(10px)',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)', // ✅ Fundo mais sutil
+      backdropFilter: 'blur(4px)', // ✅ Efeito blur moderno
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 1000,
       padding: '20px',
-      animation: 'fadeIn 0.3s ease'
+      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
     }}
     onClick={onClose}
     >
       <div style={{
-        background: 'linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 50%, #0a0e1a 100%)',
-        borderRadius: '20px',
+        backgroundColor: coresRoraima.branco, // ✅ Fundo branco como o dashboard
+        borderRadius: '16px', // ✅ Bordas mais arredondadas
         maxWidth: '1000px',
         width: '100%',
         maxHeight: '90vh',
         overflow: 'auto',
-        border: '2px solid #FF6B35',
-        boxShadow: `
-          0 0 50px rgba(255, 107, 53, 0.4),
-          inset 0 1px 0 rgba(255, 255, 255, 0.1)
-        `,
-        position: 'relative'
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', // ✅ Sombra mais suave
+        border: '1px solid #e2e8f0' // ✅ Borda sutil
       }}
       onClick={(e) => e.stopPropagation()}
       >
-        {/* Borda animada */}
-        <div style={{
-          position: 'absolute',
-          top: '0',
-          left: '0',
-          right: '0',
-          height: '3px',
-          background: 'linear-gradient(90deg, transparent, #FF6B35, #00d4ff, #FF6B35, transparent)',
-          borderRadius: '20px 20px 0 0',
-          animation: 'borderFlow 3s ease-in-out infinite'
-        }} />
-
-        {/* Header do Modal */}
+        {/* ✅ HEADER REDESENHADO - Estilo Roraima Energia */}
         <div style={{
           padding: '32px 32px 24px',
-          borderBottom: '1px solid rgba(255, 107, 53, 0.3)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          background: 'linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, transparent 100%)'
+          borderBottom: `3px solid ${coresRoraima.laranja}`, // ✅ Borda laranja como no dashboard
+          background: `linear-gradient(135deg, ${coresRoraima.branco} 0%, #f8fafc 100%)` // ✅ Gradiente sutil
         }}>
-          <div style={{ flex: 1 }}>
-            <h2 style={{
-              fontSize: '28px',
-              fontWeight: '700',
-              color: '#ffffff',
-              marginBottom: '8px',
-              textShadow: '0 0 20px rgba(255, 255, 255, 0.3)',
-              lineHeight: '1.3'
-            }}>
-              {obra.nome}
-            </h2>
-            <div style={{
-              display: 'inline-block',
-              background: 'rgba(0, 212, 255, 0.2)',
-              border: '1px solid rgba(0, 212, 255, 0.5)',
-              borderRadius: '6px',
-              padding: '4px 12px',
-              fontSize: '14px',
-              fontFamily: 'monospace',
-              color: '#00d4ff',
-              fontWeight: '600'
-            }}>
-              {obra.codigo}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start'
+          }}>
+            <div style={{ flex: 1 }}>
+              {/* ✅ TÍTULO COM DESTAQUE */}
+              <h2 style={{
+                fontSize: '28px',
+                fontWeight: '800',
+                color: coresRoraima.preto,
+                marginBottom: '8px',
+                lineHeight: '1.2'
+              }}>
+                {obra.nome}
+              </h2>
+              
+              {/* ✅ CÓDIGO E STATUS NA MESMA LINHA */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+                marginBottom: '12px'
+              }}>
+                <p style={{
+                  color: coresRoraima.cinza,
+                  fontSize: '14px',
+                  fontFamily: 'Inter, monospace',
+                  backgroundColor: '#f8fafc',
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid #e2e8f0',
+                  margin: '0',
+                  fontWeight: '600'
+                }}>
+                  {obra.codigo}
+                </p>
+                
+                <div style={{
+                  backgroundColor: corStatus,
+                  color: coresRoraima.branco,
+                  padding: '6px 16px',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                }}>
+                  {obra.status}
+                </div>
+              </div>
             </div>
+            
+            {/* ✅ BOTÃO FECHAR REDESENHADO */}
+            <button
+              onClick={onClose}
+              style={{
+                background: coresRoraima.vermelho,
+                border: 'none',
+                cursor: 'pointer',
+                padding: '12px',
+                borderRadius: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 6px -1px rgba(239, 68, 68, 0.3)',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.05)'
+                e.currentTarget.style.boxShadow = '0 6px 8px -1px rgba(239, 68, 68, 0.4)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)'
+                e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(239, 68, 68, 0.3)'
+              }}
+            >
+              <X style={{ width: '20px', height: '20px', color: coresRoraima.branco }} />
+            </button>
           </div>
-          
-          <button
-            onClick={onClose}
-            style={{
-              background: 'linear-gradient(135deg, #ff4444 0%, #cc3333 100%)',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '12px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 0 15px rgba(255, 68, 68, 0.5)',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.1)'
-              e.currentTarget.style.boxShadow = '0 0 25px rgba(255, 68, 68, 0.8)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)'
-              e.currentTarget.style.boxShadow = '0 0 15px rgba(255, 68, 68, 0.5)'
-            }}
-          >
-            <X style={{ width: '20px', height: '20px', color: '#ffffff' }} />
-          </button>
         </div>
 
-        {/* Status da Obra */}
+        {/* ✅ STATUS DA OBRA REDESENHADO */}
         <div style={{
           padding: '32px',
-          borderBottom: '1px solid rgba(255, 107, 53, 0.2)'
+          borderBottom: '1px solid #e2e8f0'
         }}>
           <h3 style={{ 
             fontSize: '20px', 
-            fontWeight: '600', 
+            fontWeight: '700', 
             marginBottom: '24px', 
-            color: '#00d4ff',
-            textShadow: '0 0 15px rgba(0, 212, 255, 0.5)'
+            color: coresRoraima.preto,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
           }}>
-            ⚡ STATUS GERAL DA OBRA
+            <TrendingUp style={{ width: '24px', height: '24px', color: coresRoraima.laranja }} />
+            Status Geral da Obra
           </h3>
           
+          {/* ✅ CARDS DE MÉTRICAS PRINCIPAIS */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
             gap: '20px',
             marginBottom: '24px'
           }}>
-            {/* Status do Cronograma */}
-            <div style={{
-              padding: '20px',
-              background: 'rgba(0, 0, 0, 0.3)',
-              borderRadius: '12px',
-              border: `2px solid ${corStatus}`,
-              boxShadow: `0 0 20px ${corStatus}33`,
-              position: 'relative',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                position: 'absolute',
-                top: '0',
-                left: '0',
-                right: '0',
-                height: '2px',
-                background: `linear-gradient(90deg, transparent, ${corStatus}, transparent)`,
-                animation: 'borderGlow 2s ease-in-out infinite alternate'
-              }} />
-              
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                {statusAtraso === 'Atrasada' ? (
-                  <AlertTriangle style={{ 
-                    width: '24px', 
-                    height: '24px', 
-                    color: corStatus,
-                    filter: `drop-shadow(0 0 8px ${corStatus})`
-                  }} />
-                ) : (
-                  <CheckCircle style={{ 
-                    width: '24px', 
-                    height: '24px', 
-                    color: corStatus,
-                    filter: `drop-shadow(0 0 8px ${corStatus})`
-                  }} />
-                )}
-                <span style={{ marginLeft: '12px', fontWeight: '600', color: '#ffffff', fontSize: '14px' }}>
-                  Status do Cronograma
-                </span>
-              </div>
-              <div style={{ 
-                fontSize: '24px', 
-                fontWeight: 'bold', 
-                color: corStatus,
-                textShadow: `0 0 15px ${corStatus}`
-              }}>
-                {statusAtraso}
-              </div>
-              {diasAtraso !== 0 && (
-                <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '6px' }}>
-                  {Math.abs(diasAtraso)} dias {diasAtraso > 0 ? 'de atraso' : 'adiantada'}
-                </div>
-              )}
-            </div>
-
             {/* Progresso Geral */}
             <div style={{
               padding: '20px',
-              background: 'rgba(0, 0, 0, 0.3)',
+              backgroundColor: '#eff6ff',
               borderRadius: '12px',
-              border: '2px solid #3b82f6',
-              boxShadow: '0 0 20px rgba(59, 130, 246, 0.3)',
-              position: 'relative',
-              overflow: 'hidden'
+              border: `2px solid ${coresRoraima.azul}`,
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
             }}>
-              <div style={{
-                position: 'absolute',
-                top: '0',
-                left: '0',
-                right: '0',
-                height: '2px',
-                background: 'linear-gradient(90deg, transparent, #3b82f6, transparent)',
-                animation: 'borderGlow 2s ease-in-out infinite alternate'
-              }} />
-              
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                <TrendingUp style={{ 
-                  width: '24px', 
-                  height: '24px', 
-                  color: '#3b82f6',
-                  filter: 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.6))'
-                }} />
-                <span style={{ marginLeft: '12px', fontWeight: '600', color: '#ffffff', fontSize: '14px' }}>
+                <TrendingUp style={{ width: '20px', height: '20px', color: coresRoraima.azul }} />
+                <span style={{ marginLeft: '8px', fontWeight: '600', color: coresRoraima.preto }}>
                   Progresso Geral
                 </span>
               </div>
-              <div style={{ 
-                fontSize: '24px', 
-                fontWeight: 'bold', 
-                color: '#3b82f6',
-                textShadow: '0 0 15px rgba(59, 130, 246, 0.8)'
-              }}>
+              <div style={{ fontSize: '32px', fontWeight: 'bold', color: coresRoraima.azul, marginBottom: '4px' }}>
                 {obra.metricas.progressoGeral}%
               </div>
-              <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '6px' }}>
-                {obra.metricas.tarefasConcluidas}/{obra.metricas.totalTarefas} tarefas
+              <div style={{ fontSize: '14px', color: coresRoraima.cinza }}>
+                {obra.metricas.tarefasConcluidas}/{obra.metricas.totalTarefas} tarefas concluídas
               </div>
             </div>
 
             {/* Avanço Físico */}
-            {obra.metricas.totalMarcos > 0 && (
-              <div style={{
-                padding: '20px',
-                background: 'rgba(0, 0, 0, 0.3)',
-                borderRadius: '12px',
-                border: '2px solid #00ff88',
-                boxShadow: '0 0 20px rgba(0, 255, 136, 0.3)',
-                position: 'relative',
-                overflow: 'hidden'
-              }}>
-                <div style={{
-                  position: 'absolute',
-                  top: '0',
-                  left: '0',
-                  right: '0',
-                  height: '2px',
-                  background: 'linear-gradient(90deg, transparent, #00ff88, transparent)',
-                  animation: 'borderGlow 2s ease-in-out infinite alternate'
-                }} />
-                
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                  <Calendar style={{ 
-                    width: '24px', 
-                    height: '24px', 
-                    color: '#00ff88',
-                    filter: 'drop-shadow(0 0 8px rgba(0, 255, 136, 0.6))'
-                  }} />
-                  <span style={{ marginLeft: '12px', fontWeight: '600', color: '#ffffff', fontSize: '14px' }}>
-                    Avanço Físico
-                  </span>
-                </div>
-                <div style={{ 
-                  fontSize: '24px', 
-                  fontWeight: 'bold', 
-                  color: '#00ff88',
-                  textShadow: '0 0 15px rgba(0, 255, 136, 0.8)'
-                }}>
-                  {obra.metricas.avancooFisico}%
-                </div>
-                <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '6px' }}>
-                  {obra.metricas.marcosConcluidos}/{obra.metricas.totalMarcos} marcos
-                </div>
+            <div style={{
+              padding: '20px',
+              backgroundColor: '#f0fdf4',
+              borderRadius: '12px',
+              border: `2px solid ${coresRoraima.verde}`,
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                <CheckCircle style={{ width: '20px', height: '20px', color: coresRoraima.verde }} />
+                <span style={{ marginLeft: '8px', fontWeight: '600', color: coresRoraima.preto }}>
+                  Avanço Físico
+                </span>
               </div>
-            )}
+              <div style={{ fontSize: '32px', fontWeight: 'bold', color: coresRoraima.verde, marginBottom: '4px' }}>
+                {obra.metricas.avancooFisico}%
+              </div>
+              <div style={{ fontSize: '14px', color: coresRoraima.cinza }}>
+                {obra.metricas.marcosConcluidos}/{obra.metricas.totalMarcos} marcos físicos
+              </div>
+            </div>
+
+            {/* Status do Cronograma */}
+            <div style={{
+              padding: '20px',
+              backgroundColor: corStatus === coresRoraima.verde ? '#f0fdf4' : 
+                             corStatus === coresRoraima.vermelho ? '#fef2f2' : '#eff6ff',
+              borderRadius: '12px',
+              border: `2px solid ${corStatus}`,
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                {obra.status.toLowerCase().includes('atrasado') ? (
+                  <AlertTriangle style={{ width: '20px', height: '20px', color: corStatus }} />
+                ) : (
+                  <CheckCircle style={{ width: '20px', height: '20px', color: corStatus }} />
+                )}
+                <span style={{ marginLeft: '8px', fontWeight: '600', color: coresRoraima.preto }}>
+                  Status do Cronograma
+                </span>
+              </div>
+              <div style={{ fontSize: '20px', fontWeight: 'bold', color: corStatus, marginBottom: '4px' }}>
+                {statusAtraso}
+              </div>
+              {diasAtraso !== 0 && (
+                <div style={{ fontSize: '14px', color: coresRoraima.cinza }}>
+                  {Math.abs(diasAtraso)} dias {diasAtraso > 0 ? 'de atraso' : 'adiantada'}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Informações de Datas */}
+          {/* ✅ RESUMO DE TAREFAS */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+            gap: '16px',
+            marginBottom: '24px'
+          }}>
+            <div style={{
+              textAlign: 'center',
+              padding: '16px',
+              backgroundColor: '#f8fafc',
+              borderRadius: '8px',
+              border: '1px solid #e2e8f0'
+            }}>
+              <Building2 style={{ width: '24px', height: '24px', color: coresRoraima.cinza, margin: '0 auto 8px' }} />
+              <div style={{ fontSize: '24px', fontWeight: 'bold', color: coresRoraima.preto }}>
+                {obra.metricas.totalTarefas}
+              </div>
+              <div style={{ fontSize: '12px', color: coresRoraima.cinza }}>Total de Tarefas</div>
+            </div>
+
+            <div style={{
+              textAlign: 'center',
+              padding: '16px',
+              backgroundColor: '#f0fdf4',
+              borderRadius: '8px',
+              border: '1px solid #dcfce7'
+            }}>
+              <Users style={{ width: '24px', height: '24px', color: coresRoraima.verde, margin: '0 auto 8px' }} />
+              <div style={{ fontSize: '24px', fontWeight: 'bold', color: coresRoraima.verde }}>
+                {obra.metricas.tarefasConcluidas}
+              </div>
+              <div style={{ fontSize: '12px', color: coresRoraima.cinza }}>Concluídas</div>
+            </div>
+
+            <div style={{
+              textAlign: 'center',
+              padding: '16px',
+              backgroundColor: '#fefce8',
+              borderRadius: '8px',
+              border: '1px solid #fef3c7'
+            }}>
+              <Wrench style={{ width: '24px', height: '24px', color: coresRoraima.roxo, margin: '0 auto 8px' }} />
+              <div style={{ fontSize: '24px', fontWeight: 'bold', color: coresRoraima.roxo }}>
+                {obra.metricas.marcosConcluidos}/{obra.metricas.totalMarcos}
+              </div>
+              <div style={{ fontSize: '12px', color: coresRoraima.cinza }}>Marcos Físicos</div>
+            </div>
+          </div>
+
+          {/* ✅ INFORMAÇÕES DE DATAS REDESENHADAS */}
           <div style={{
             padding: '20px',
-            background: 'rgba(255, 107, 53, 0.1)',
-            border: '1px solid rgba(255, 107, 53, 0.3)',
-            borderRadius: '12px'
+            backgroundColor: '#f8fafc',
+            borderRadius: '12px',
+            border: '1px solid #e2e8f0'
           }}>
             <h4 style={{ 
               fontSize: '16px', 
               fontWeight: '600', 
               marginBottom: '16px', 
-              color: '#FF6B35',
+              color: coresRoraima.preto,
               display: 'flex',
-              alignItems: 'center'
+              alignItems: 'center',
+              gap: '8px'
             }}>
-              📅 Cronograma da Obra
+              <Calendar style={{ width: '18px', height: '18px', color: coresRoraima.laranja }} />
+              Cronograma da Obra
             </h4>
             
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
               gap: '16px',
-              fontSize: '13px'
+              fontSize: '14px'
             }}>
               <div style={{
-                background: 'rgba(0, 0, 0, 0.3)',
                 padding: '12px',
+                backgroundColor: coresRoraima.branco,
                 borderRadius: '8px',
-                border: '1px solid rgba(255, 107, 53, 0.3)'
+                border: '1px solid #e2e8f0'
               }}>
-                <div style={{ color: '#94a3b8', marginBottom: '4px', fontSize: '11px' }}>Início Previsto:</div>
-                <div style={{ fontWeight: '600', color: '#ffffff' }}>{formatarData(dataInicioBase)}</div>
+                <div style={{ color: coresRoraima.cinza, marginBottom: '4px', fontSize: '12px' }}>Início Previsto:</div>
+                <div style={{ fontWeight: '600', color: coresRoraima.preto }}>{formatarData(dataInicioBase)}</div>
               </div>
               <div style={{
-                background: 'rgba(0, 0, 0, 0.3)',
                 padding: '12px',
+                backgroundColor: coresRoraima.branco,
                 borderRadius: '8px',
-                border: '1px solid rgba(255, 107, 53, 0.3)'
+                border: '1px solid #e2e8f0'
               }}>
-                <div style={{ color: '#94a3b8', marginBottom: '4px', fontSize: '11px' }}>Início Real:</div>
-                <div style={{ fontWeight: '600', color: '#ffffff' }}>{formatarData(dataInicio)}</div>
+                <div style={{ color: coresRoraima.cinza, marginBottom: '4px', fontSize: '12px' }}>Início Real:</div>
+                <div style={{ fontWeight: '600', color: coresRoraima.preto }}>{formatarData(dataInicio)}</div>
               </div>
               <div style={{
-                background: 'rgba(0, 0, 0, 0.3)',
                 padding: '12px',
+                backgroundColor: coresRoraima.branco,
                 borderRadius: '8px',
-                border: '1px solid rgba(255, 107, 53, 0.3)'
+                border: '1px solid #e2e8f0'
               }}>
-                <div style={{ color: '#94a3b8', marginBottom: '4px', fontSize: '11px' }}>Término Previsto:</div>
-                <div style={{ fontWeight: '600', color: '#ffffff' }}>{formatarData(dataTerminoBase)}</div>
+                <div style={{ color: coresRoraima.cinza, marginBottom: '4px', fontSize: '12px' }}>Término Previsto:</div>
+                <div style={{ fontWeight: '600', color: coresRoraima.preto }}>{formatarData(dataTerminoBase)}</div>
               </div>
               <div style={{
-                background: 'rgba(0, 0, 0, 0.3)',
                 padding: '12px',
+                backgroundColor: coresRoraima.branco,
                 borderRadius: '8px',
-                border: '1px solid rgba(255, 107, 53, 0.3)'
+                border: '1px solid #e2e8f0'
               }}>
-                <div style={{ color: '#94a3b8', marginBottom: '4px', fontSize: '11px' }}>Término Real:</div>
-                <div style={{ fontWeight: '600', color: '#ffffff' }}>{formatarData(dataTermino)}</div>
+                <div style={{ color: coresRoraima.cinza, marginBottom: '4px', fontSize: '12px' }}>Término Real:</div>
+                <div style={{ fontWeight: '600', color: coresRoraima.preto }}>{formatarData(dataTermino)}</div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Curva de Tendência */}
+        {/* ✅ CURVA DE TENDÊNCIA REDESENHADA */}
         <div style={{ padding: '32px' }}>
           <h3 style={{ 
             fontSize: '20px', 
-            fontWeight: '600', 
+            fontWeight: '700', 
             marginBottom: '20px', 
-            color: '#00d4ff',
-            textShadow: '0 0 15px rgba(0, 212, 255, 0.5)'
+            color: coresRoraima.preto,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
           }}>
-            📈 Curva de Tendência - Realizado vs Previsto
+            <TrendingUp style={{ width: '24px', height: '24px', color: coresRoraima.azul }} />
+            Curva de Tendência - Realizado vs Previsto
           </h3>
           
           <div style={{
-            background: 'rgba(0, 0, 0, 0.3)',
+            backgroundColor: '#f8fafc',
             borderRadius: '12px',
-            border: '1px solid rgba(255, 107, 53, 0.3)',
+            border: '1px solid #e2e8f0',
             padding: '20px'
           }}>
             <CurvaTendencia obra={obra} />

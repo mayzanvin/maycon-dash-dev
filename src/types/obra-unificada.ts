@@ -8,10 +8,11 @@ export interface MetricasGerais {
   progressoMedio: number
   atrasadas: number
   prazo: number
-  // ✅ ADICIONADAS: propriedades que MetricasObras.tsx usa nos cálculos
+  // ✅ ADICIONADAS: propriedades que os componentes usam
   totalMarcosFisicos: number
   marcosFisicosConcluidos: number
   mediaAvancaoFisico: number
+  obrasComExecucao: number  // ✅ CORRIGIDO: Propriedade faltante
   // ✅ COMPATIBILIDADE: nomes alternativos que podem ser usados
   mediaaProgressoGeral?: number
   mediaaAvancaoFisico?: number
@@ -40,6 +41,13 @@ export interface ObraUnificada {
     marcosConcluidos: number
   }
   temEnergizacao?: boolean
+  // ✅ ADICIONADAS: Informações extras para os cards
+  responsavel?: string
+  dataInicio?: string
+  dataTermino?: string
+  localizacao?: string
+  diasRestantes?: number
+  prioridade?: 'Alta' | 'Média' | 'Baixa'
   fiscalizacao: {
     tarefas: TaskData[]
     progressoFornecimentos: number

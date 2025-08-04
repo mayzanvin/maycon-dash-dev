@@ -7,9 +7,9 @@ interface MetricsCardsProps {
 
 const MetricsCards: React.FC<MetricsCardsProps> = ({ data, selectedSheet }) => {
   const totalTasks = data.length
-  const completedTasks = data.filter(task => (task.__Conclu_do || 0) === 100).length
-  const inProgressTasks = data.filter(task => (task.__Conclu_do || 0) > 0 && (task.__Conclu_do || 0) < 100).length
-  const pendingTasks = data.filter(task => (task.__Conclu_do || 0) === 0).length
+  const completedTasks = data.filter(task => (task.Porcentagem_Conclu_do || 0) === 100).length
+  const inProgressTasks = data.filter(task => (task.Porcentagem_Conclu_do || 0) > 0 && (task.Porcentagem_Conclu_do || 0) < 100).length
+  const pendingTasks = data.filter(task => (task.Porcentagem_Conclu_do || 0) === 0).length
 
   const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
 

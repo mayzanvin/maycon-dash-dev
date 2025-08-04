@@ -1,4 +1,4 @@
-// src/utils/dataAdapter.ts - COMPATÍVEL COM BaseObraData REAL
+// src/utils/dataAdapter.ts - CORREÇÃO CIRÚRGICA MANTENDO EVOLUÇÃO
 import { DashboardData, BaseObraData } from '@/types/obra'
 import { DashboardUnificadoType, ObraUnificada, MetricasGerais } from '@/types/obra-unificada'
 
@@ -99,7 +99,7 @@ export class DataAdapter {
     console.log(`🏗️ Criando obra: ${par.nomeBase}`)
     console.log(`   📊 Tarefas F: ${tarefasF.length}, Tarefas E: ${tarefasE.length}`)
 
-    // 📝 OBTER NOME REAL DA OBRA - LIMPO
+    // 📝 OBTER INFORMAÇÕES DA OBRA
     const temExecucao = tarefasE.length > 0
     const nomeReal = this.obterNomeRealObra(tarefasF)
     
@@ -171,18 +171,18 @@ export class DataAdapter {
     console.log(`🔍 Buscando nome real da obra em ${tarefasF.length} tarefas de Fiscalização...`)
     
     // Buscar primeira tarefa nível 1 e pegar o Resumo_pai
-    const tarefaNivel1 = tarefasF.find(t => t.N_vel === 1)
+    const tarefaNivel1 = tarefasF.find(t => Number(t.N_vel) === 1)
     
     if (tarefaNivel1 && tarefaNivel1.Resumo_pai) {
-      const nome = tarefaNivel1.Resumo_pai
+      const nome = String(tarefaNivel1.Resumo_pai)
       console.log(`✅ Nome encontrado no Resumo (pai): ${nome}`)
       return nome
     }
     
     // Fallback: qualquer tarefa com Resumo_pai preenchido
-    const tarefaComResumo = tarefasF.find(t => t.Resumo_pai && t.Resumo_pai.trim())
+    const tarefaComResumo = tarefasF.find(t => t.Resumo_pai && String(t.Resumo_pai).trim())
     if (tarefaComResumo && tarefaComResumo.Resumo_pai) {
-      const nome = tarefaComResumo.Resumo_pai
+      const nome = String(tarefaComResumo.Resumo_pai)
       console.log(`⚠️ Nome fallback do Resumo (pai): ${nome}`)
       return nome
     }
@@ -191,12 +191,13 @@ export class DataAdapter {
     return 'Obra sem nome'
   }
 
-  // 📊 CALCULAR PROGRESSO GERAL - USANDO Porcentagem_Conclu_do
+  // 📊 CALCULAR PROGRESSO GERAL - ✅ USAR A PROPRIEDADE CORRETA
   private static calcularProgressoGeral(tarefasF: BaseObraData[], tarefasE: BaseObraData[]): number {
     const todasTarefas = [...tarefasF, ...tarefasE]
     if (todasTarefas.length === 0) return 0
     
     const somaProgressos = todasTarefas.reduce((acc, t) => {
+      // ✅ USAR A PROPRIEDADE QUE REALMENTE EXISTE NO BaseObraData
       const progresso = Number(t.Porcentagem_Conclu_do) || 0
       return acc + progresso
     }, 0)
@@ -290,8 +291,7 @@ export class DataAdapter {
     // 📊 ANÁLISE DE CRONOGRAMA (baseado em benchmarks típicos)
     let statusCronograma = ''
     
-    // Lógica simplificada: obras com >60% avanço físico são consideradas "adiantadas"
-    // obras entre 30-60% "no prazo", <30% com execução são "atrasadas"
+    // Lógica baseada na evolução que estabelecemos
     if (temExecucao) {
       if (avancaoFisico >= 60) {
         statusCronograma = 'Adiantado'
@@ -413,13 +413,14 @@ export class DataAdapter {
     }
   }
 
-  // ✅ CALCULAR MÉTRICAS GERAIS
+  // ✅ CALCULAR MÉTRICAS GERAIS - INCLUIR obrasComExecucao
   private static calcularMetricasGerais(obras: ObraUnificada[]): MetricasGerais {
     const totalObras = obras.length
     const obrasConcluidas = obras.filter(o => o.progressoGeral >= 100).length
     const obrasEmAndamento = obras.filter(o => o.progressoGeral > 0 && o.progressoGeral < 100).length
+    const obrasComExecucao = obras.filter(o => o.execucao.totalTarefas && o.execucao.totalTarefas > 0).length
     const progressoMedio = totalObras > 0 ? Math.round(obras.reduce((acc, o) => acc + o.progressoGeral, 0) / totalObras) : 0
-    const atrasadas = 0 // Implementar lógica de atraso se necessário
+    const atrasadas = obras.filter(o => o.status.toLowerCase().includes('atrasado')).length
     const prazo = totalObras - atrasadas
     const totalMarcosFisicos = obras.reduce((acc, o) => acc + (o.marcos?.total || 0), 0)
     const marcosFisicosConcluidos = obras.reduce((acc, o) => acc + (o.marcos?.concluidos || 0), 0)
@@ -429,6 +430,7 @@ export class DataAdapter {
       totalObras,
       obrasConcluidas,
       obrasEmAndamento,
+      obrasComExecucao, // ✅ ADICIONADA
       progressoMedio,
       atrasadas,
       prazo,
@@ -446,6 +448,7 @@ export class DataAdapter {
       totalObras: 0,
       obrasConcluidas: 0,
       obrasEmAndamento: 0,
+      obrasComExecucao: 0, // ✅ ADICIONADA
       progressoMedio: 0,
       atrasadas: 0,
       prazo: 0,

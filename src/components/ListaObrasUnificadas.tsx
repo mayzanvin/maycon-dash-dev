@@ -160,53 +160,61 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
               borderRadius: '12px 12px 0 0'
             }} />
 
-            {/* Header da obra */}
+            {/* Header da obra - REORGANIZADO */}
             <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'flex-start',
               marginBottom: '16px',
               marginTop: '8px'
             }}>
-              <div style={{ flex: 1 }}>
-                <h3 style={{
-                  fontSize: '18px',
-                  fontWeight: '700',
-                  color: coresRoraima.preto,
-                  marginBottom: '4px',
-                  lineHeight: '1.4',
-                  wordWrap: 'break-word',
-                  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
-                }}>
-                  {obra.nome}
-                </h3>
+              {/* Título da obra - AGORA EM CIMA */}
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '700',
+                color: coresRoraima.preto,
+                marginBottom: '8px',
+                lineHeight: '1.4',
+                wordWrap: 'break-word',
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+              }}>
+                {obra.nome}
+              </h3>
+              
+              {/* Código + Status na mesma linha */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '12px'
+              }}>
                 <p style={{
                   fontSize: '12px',
                   color: coresRoraima.cinza,
                   fontFamily: 'Inter, monospace',
                   backgroundColor: '#f8fafc',
-                  padding: '2px 6px',
-                  borderRadius: '4px',
-                  display: 'inline-block',
-                  border: '1px solid #e2e8f0'
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  border: '1px solid #e2e8f0',
+                  margin: '0',
+                  fontWeight: '600',
+                  flex: 1
                 }}>
                   {obra.codigo}
                 </p>
-              </div>
-              
-              {/* ✅ USAR STATUS REAL DO DATAADAPTER */}
-              <div style={{
-                backgroundColor: getCorStatus(obra.status),
-                color: '#ffffff',
-                padding: '4px 8px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                fontWeight: '600',
-                minWidth: '80px',
-                textAlign: 'center',
-                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
-              }}>
-                {obra.status}
+                
+                {/* Status ao lado do código */}
+                <div style={{
+                  backgroundColor: getCorStatus(obra.status),
+                  color: '#ffffff',
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  textAlign: 'center',
+                  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+                  whiteSpace: 'nowrap',
+                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                }}>
+                  {obra.status}
+                </div>
               </div>
             </div>
 
@@ -287,7 +295,7 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
                   fontSize: '24px', 
                   fontWeight: 'bold', 
                   color: coresRoraima.verde,
-                  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segue UI", Roboto, Helvetica, Arial, sans-serif'
+                  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
                 }}>
                   {obra.metricas.avancooFisico}%
                 </div>

@@ -10,17 +10,17 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({ data }) => {
   const statusData = [
     { 
       name: 'Concluídas', 
-      value: data.filter(task => (task.__Conclu_do || 0) === 100).length,
+      value: data.filter(task => (task.Porcentagem_Conclu_do || 0) === 100).length,
       color: '#00ff88'
     },
     { 
       name: 'Em Andamento', 
-      value: data.filter(task => (task.__Conclu_do || 0) > 0 && (task.__Conclu_do || 0) < 100).length,
+      value: data.filter(task => (task.Porcentagem_Conclu_do || 0) > 0 && (task.Porcentagem_Conclu_do || 0) < 100).length,
       color: '#00d4ff'
     },
     { 
       name: 'Pendentes', 
-      value: data.filter(task => (task.__Conclu_do || 0) === 0).length,
+      value: data.filter(task => (task.Porcentagem_Conclu_do || 0) === 0).length,
       color: '#ff6b6b'
     }
   ]
@@ -35,8 +35,8 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({ data }) => {
     return {
       nome: nomeOriginal,
       nomeFormatado: nomeFormatado,
-      avancoFisico: Math.round(obra.__Conclu_do || 0),
-      progressoGeral: Math.round(obra.__Conclu_do || 0)
+      avancoFisico: Math.round(obra.Porcentagem_Conclu_do || 0),
+      progressoGeral: Math.round(obra.Porcentagem_Conclu_do || 0)
     }
   })
 
