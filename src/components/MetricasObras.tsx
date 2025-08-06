@@ -5,7 +5,7 @@ interface MetricasObrasProps {
 }
 
 const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas }) => {
-  console.log("🔥 LAYOUT HORIZONTAL COMPACTO - " + new Date().toLocaleTimeString())
+  console.log("🔥 MÉTRICAS COM DADOS FINANCEIROS - " + new Date().toLocaleTimeString())
   
   const avancaoFisicoPercentual = metricas.totalMarcosFisicos > 0 
     ? Math.round((metricas.marcosFisicosConcluidos / metricas.totalMarcosFisicos) * 100)
@@ -22,47 +22,22 @@ const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas }) => {
     cinzaClaro: '#6B7280'
   }
 
-  // Função para calcular o índice de destaque de uma obra
-  const calcularIndiceDestaque = (obra: any) => {
-    // Simulando dados baseados nas métricas existentes
-    const avancFisico = obra.metricas?.avancooFisico || 0
-    const aderenciaCronograma = Math.min(100, obra.metricas?.progressoGeral * 1.2 || 0) // Simulado
-    const execucaoFinanceira = Math.min(100, obra.metricas?.progressoGeral * 0.9 || 0) // Simulado  
-    const tarefasCriticasEmDia = Math.min(100, (obra.metricas?.tarefasConcluidas / obra.metricas?.totalTarefas) * 120 || 0) // Simulado
-    const pendenciasResolvidas = Math.min(100, obra.metricas?.avancooFisico * 1.1 || 0) // Simulado
-
-    // Cálculo conforme a fórmula mostrada
-    const indice = (
-      (avancFisico/100 * 0.30) +
-      (aderenciaCronograma/100 * 0.25) +
-      (execucaoFinanceira/100 * 0.20) +
-      (tarefasCriticasEmDia/100 * 0.15) +
-      (pendenciasResolvidas/100 * 0.10)
-    ) * 10 // Convertendo para escala 0-10
-
-    return {
-      indice: Math.round(indice * 100) / 100, // 2 casas decimais
-      avancFisico,
-      aderenciaCronograma,
-      execucaoFinanceira,
-      tarefasCriticasEmDia,
-      pendenciasResolvidas
+  // 💰 FORMATAÇÃO DE VALORES FINANCEIROS
+  const formatarMoeda = (valor: number) => {
+    if (valor >= 1000000) {
+      return `R$ ${(valor / 1000000).toFixed(1)}M`
+    } else if (valor >= 1000) {
+      return `R$ ${(valor / 1000).toFixed(0)}k`
     }
+    return `R$ ${valor.toLocaleString()}`
   }
 
-  // Encontrar a obra destaque (maior índice)
-  const obrasComIndice = metricas.totalObras > 0 ? [
-    // Simulando obras para o cálculo - em produção viria dos dados reais
-    { nome: "SE Sucuba 69/34,5 kV", metricas: { avancooFisico: 72, progressoGeral: 66, tarefasConcluidas: 95, totalTarefas: 132 } },
-    { nome: "SE Industrial 138kV", metricas: { avancooFisico: 45, progressoGeral: 52, tarefasConcluidas: 23, totalTarefas: 89 } },
-    { nome: "LT Caracaraí-Rorainópolis", metricas: { avancooFisico: 88, progressoGeral: 85, tarefasConcluidas: 67, totalTarefas: 78 } }
-  ].map(obra => ({ ...obra, indiceData: calcularIndiceDestaque(obra) })) : []
-
-  const obraDestaque = obrasComIndice.length > 0 
-    ? obrasComIndice.reduce((prev, current) => 
-        prev.indiceData.indice > current.indiceData.indice ? prev : current
-      )
-    : null
+  // 💰 COR DA EFICIÊNCIA
+  const getCorEficiencia = (eficiencia: number) => {
+    if (eficiencia <= 120) return coresRoraima.verde    // Eficiente
+    if (eficiencia <= 150) return coresRoraima.dourado  // Atenção
+    return '#EF4444'                                     // Crítico
+  }
 
   return (
     <div style={{ 
@@ -86,7 +61,6 @@ const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas }) => {
         minHeight: '60px',
         transition: 'all 0.2s ease'
       }}>
-        {/* Ícone */}
         <div style={{
           width: '40px',
           height: '40px',
@@ -105,7 +79,6 @@ const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas }) => {
           </svg>
         </div>
         
-        {/* Conteúdo */}
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '2px' }}>
             <h3 style={{
@@ -149,7 +122,6 @@ const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas }) => {
         minHeight: '60px',
         transition: 'all 0.2s ease'
       }}>
-        {/* Ícone */}
         <div style={{
           width: '40px',
           height: '40px',
@@ -167,7 +139,6 @@ const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas }) => {
           </svg>
         </div>
         
-        {/* Conteúdo */}
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '2px' }}>
             <h3 style={{
@@ -211,7 +182,6 @@ const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas }) => {
         minHeight: '60px',
         transition: 'all 0.2s ease'
       }}>
-        {/* Ícone */}
         <div style={{
           width: '40px',
           height: '40px',
@@ -229,7 +199,6 @@ const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas }) => {
           </svg>
         </div>
         
-        {/* Conteúdo */}
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '2px' }}>
             <h3 style={{
@@ -260,7 +229,7 @@ const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas }) => {
         </div>
       </div>
 
-      {/* Card 4 - Marcos Físicos */}
+      {/* 💰 Card 4 - NOVO: Orçamento Total do Portfólio */}
       <div style={{
         backgroundColor: '#ffffff',
         borderRadius: '8px',
@@ -273,7 +242,197 @@ const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas }) => {
         minHeight: '60px',
         transition: 'all 0.2s ease'
       }}>
-        {/* Ícone */}
+        <div style={{
+          width: '40px',
+          height: '40px',
+          borderRadius: '8px',
+          backgroundColor: '#fef7ed',
+          border: '2px solid ' + coresRoraima.laranja,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.laranja} strokeWidth="2.5">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 2v10l4 3"/>
+            <path d="M6 12c0-2.2.9-4.2 2.3-5.7"/>
+          </svg>
+        </div>
+        
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '2px' }}>
+            <h3 style={{
+              color: coresRoraima.preto,
+              fontSize: '14px',
+              fontWeight: '700',
+              margin: 0,
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}>
+              ORÇAMENTO TOTAL
+            </h3>
+            <span style={{ 
+              fontSize: '18px', 
+              fontWeight: '800', 
+              color: coresRoraima.laranja
+            }}>
+              {formatarMoeda(metricas.orcamentoTotalPortfolio)}
+            </span>
+          </div>
+          <div style={{ 
+            fontSize: '12px', 
+            color: coresRoraima.cinzaClaro,
+            fontWeight: '500'
+          }}>
+            Soma de todas as obras
+          </div>
+        </div>
+      </div>
+
+      {/* 💰 Card 5 - NOVO: Valor Realizado */}
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '8px',
+        padding: '16px',
+        border: '2px solid #e2e8f0',
+        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        minHeight: '60px',
+        transition: 'all 0.2s ease'
+      }}>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          borderRadius: '8px',
+          backgroundColor: '#eff6ff',
+          border: '2px solid ' + coresRoraima.azul,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.azul} strokeWidth="2.5">
+            <rect x="1" y="3" width="15" height="13"/>
+            <path d="M16 8h4a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-4"/>
+            <circle cx="9" cy="9" r="2"/>
+            <path d="M6 21v-7a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v7"/>
+          </svg>
+        </div>
+        
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '2px' }}>
+            <h3 style={{
+              color: coresRoraima.preto,
+              fontSize: '14px',
+              fontWeight: '700',
+              margin: 0,
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}>
+              VALOR REALIZADO
+            </h3>
+            <span style={{ 
+              fontSize: '18px', 
+              fontWeight: '800', 
+              color: coresRoraima.azul
+            }}>
+              {formatarMoeda(metricas.valorRealizadoPortfolio)}
+            </span>
+          </div>
+          <div style={{ 
+            fontSize: '12px', 
+            color: coresRoraima.cinzaClaro,
+            fontWeight: '500'
+          }}>
+            {metricas.progressoFinanceiroMedio}% do orçamento executado
+          </div>
+        </div>
+      </div>
+
+      {/* 💰 Card 6 - NOVO: Eficiência Média do Portfólio */}
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '8px',
+        padding: '16px',
+        border: '2px solid #e2e8f0',
+        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        minHeight: '60px',
+        transition: 'all 0.2s ease',
+        background: metricas.eficienciaMediaPortfolio <= 120 ? 'linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)' : 
+                   metricas.eficienciaMediaPortfolio <= 150 ? 'linear-gradient(135deg, #fefce8 0%, #ffffff 100%)' :
+                   'linear-gradient(135deg, #fef2f2 0%, #ffffff 100%)'
+      }}>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          borderRadius: '8px',
+          backgroundColor: getCorEficiencia(metricas.eficienciaMediaPortfolio) === coresRoraima.verde ? '#f0fdf4' :
+                           getCorEficiencia(metricas.eficienciaMediaPortfolio) === coresRoraima.dourado ? '#fef3e2' : '#fef2f2',
+          border: '2px solid ' + getCorEficiencia(metricas.eficienciaMediaPortfolio),
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={getCorEficiencia(metricas.eficienciaMediaPortfolio)} strokeWidth="2.5">
+            <path d="M12 2v10l4 3"/>
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+            <path d="M9 9h.01"/>
+            <path d="M15 9h.01"/>
+          </svg>
+        </div>
+        
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '2px' }}>
+            <h3 style={{
+              color: coresRoraima.preto,
+              fontSize: '14px',
+              fontWeight: '700',
+              margin: 0,
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}>
+              EFICIÊNCIA MÉDIA
+            </h3>
+            <span style={{ 
+              fontSize: '24px', 
+              fontWeight: '800', 
+              color: getCorEficiencia(metricas.eficienciaMediaPortfolio)
+            }}>
+              {metricas.eficienciaMediaPortfolio}%
+            </span>
+          </div>
+          <div style={{ 
+            fontSize: '12px', 
+            color: coresRoraima.cinzaClaro,
+            fontWeight: '500'
+          }}>
+            {metricas.eficienciaMediaPortfolio <= 120 ? 'Portfólio eficiente' :
+             metricas.eficienciaMediaPortfolio <= 150 ? 'Atenção nos gastos' : 'Gastos críticos'}
+          </div>
+        </div>
+      </div>
+
+      {/* Card 7 - Marcos Físicos (mantido) */}
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '8px',
+        padding: '16px',
+        border: '2px solid #e2e8f0',
+        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        minHeight: '60px',
+        transition: 'all 0.2s ease'
+      }}>
         <div style={{
           width: '40px',
           height: '40px',
@@ -291,7 +450,6 @@ const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas }) => {
           </svg>
         </div>
         
-        {/* Conteúdo */}
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '2px' }}>
             <h3 style={{
@@ -322,7 +480,7 @@ const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas }) => {
         </div>
       </div>
 
-      {/* Card 5 - Obra Destaque do Mês */}
+      {/* 💰 Card 8 - NOVO: Orçamento Aprovado 2025 */}
       <div style={{
         backgroundColor: '#ffffff',
         borderRadius: '8px',
@@ -333,32 +491,28 @@ const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas }) => {
         alignItems: 'center',
         gap: '12px',
         minHeight: '60px',
-        transition: 'all 0.2s ease',
-        background: obraDestaque ? 'linear-gradient(135deg, #fef7ed 0%, #ffffff 100%)' : '#ffffff'
+        transition: 'all 0.2s ease'
       }}>
-        {/* Ícone */}
         <div style={{
           width: '40px',
           height: '40px',
           borderRadius: '8px',
-          backgroundColor: '#fef3e2',
-          border: '2px solid ' + coresRoraima.dourado,
+          backgroundColor: '#faf5ff',
+          border: '2px solid ' + coresRoraima.roxo,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           flexShrink: 0
         }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.dourado} strokeWidth="2.5">
-            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
-            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
-            <path d="M4 22h16"/>
-            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
-            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
-            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={coresRoraima.roxo} strokeWidth="2.5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14,2 14,8 20,8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10,9 9,9 8,9"/>
           </svg>
         </div>
         
-        {/* Conteúdo */}
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '2px' }}>
             <h3 style={{
@@ -369,14 +523,14 @@ const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas }) => {
               textTransform: 'uppercase',
               letterSpacing: '0.5px'
             }}>
-              OBRA DESTAQUE
+              APROVADO 2025
             </h3>
             <span style={{ 
-              fontSize: '24px', 
+              fontSize: '18px', 
               fontWeight: '800', 
-              color: coresRoraima.dourado
+              color: coresRoraima.roxo
             }}>
-              {obraDestaque ? `${obraDestaque.indiceData.indice}/10` : 'N/A'}
+              {formatarMoeda(metricas.orcamentoAprovadoPortfolio)}
             </span>
           </div>
           <div style={{ 
@@ -384,7 +538,10 @@ const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas }) => {
             color: coresRoraima.cinzaClaro,
             fontWeight: '500'
           }}>
-            {obraDestaque ? obraDestaque.nome : 'Calculando índices...'}
+            {metricas.orcamentoAprovadoPortfolio > 0 ? 
+              `${Math.round((metricas.valorRealizadoPortfolio / metricas.orcamentoAprovadoPortfolio) * 100)}% executado vs aprovado` :
+              'Correlação pendente'
+            }
           </div>
         </div>
       </div>

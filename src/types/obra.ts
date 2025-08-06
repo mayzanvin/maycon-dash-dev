@@ -1,4 +1,4 @@
-// src/types/obra.ts - TIPOS BASE ATUALIZADOS COM 5 COLUNAS ADICIONAIS
+// src/types/obra.ts - TIPOS BASE CORRIGIDOS PARA COMPATIBILIDADE
 
 export interface BaseObraData {
   EDT: string | number
@@ -10,8 +10,8 @@ export interface BaseObraData {
   Porcentagem_Conclu_do: number
   LinhaBase_In_cio?: number | string
   LinhaBase_T_rmino?: number | string
-  
-  // ✅ 5 COLUNAS ADICIONAIS IMPORTANTES:
+
+  // ✅ COLUNAS ADICIONAIS IMPORTANTES:
   Predecessoras?: string | null     // Dependências da tarefa
   Sucessoras?: string | null        // Tarefas dependentes
   Marco?: string | null             // "SIM" para marcos físicos
@@ -19,7 +19,18 @@ export interface BaseObraData {
   Nomes_dos_Recursos?: string | null // Equipes (DTE, ENW, etc.)
   Coordenada?: string | null        // Para localização no mapa
   
+  // 💰 DADOS FINANCEIROS
+  Orcamento_R?: number | null       // Orçamento em R$ por tarefa
+
   _aba?: string // Identificação da aba de origem
+}
+
+// 💰 DADOS DO BASEINVESTIMENTO2025
+export interface BaseInvestimentoData {
+  ID_Projeto: string                // Ex: "DTE-31"
+  ProgramaOrcamentario: string      // Ex: "R200_DTE0020"
+  Descricao: string                 // Descrição da obra
+  ValorAprovado: number             // Valor aprovado em R$
 }
 
 export interface ExcelData {
@@ -29,6 +40,7 @@ export interface ExcelData {
 export interface DashboardData {
   todasTarefas: BaseObraData[]
   obrasPorAba: ExcelData
+  investimentos?: BaseInvestimentoData[]  // 💰 DADOS DE INVESTIMENTO
   ultimaAtualizacao?: string
 }
 

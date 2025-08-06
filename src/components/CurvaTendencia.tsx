@@ -1,7 +1,7 @@
 import React from 'react'
 import { ObraUnificada } from '@/types/obra-unificada'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
-import { TrendingUp, TrendingDown, Calendar, Target, Clock, AlertTriangle } from 'lucide-react'
+import { TrendingUp, TrendingDown, Calendar, Target, Clock, AlertTriangle, DollarSign, BarChart3 } from 'lucide-react'
 
 interface CurvaTendenciaProps {
   obra: ObraUnificada
@@ -9,28 +9,33 @@ interface CurvaTendenciaProps {
 
 const CurvaTendencia: React.FC<CurvaTendenciaProps> = ({ obra }) => {
   // Cores da Roraima Energia
-  const cores = {
+  const coresRoraima = {
     azul: '#0EA5E9',
     verde: '#10B981',
     laranja: '#FF6B35',
     vermelho: '#EF4444',
     amarelo: '#F59E0B',
+    roxo: '#8b5cf6',
     cinza: '#6B7280',
     azulClaro: '#E0F2FE',
     verdeClaro: '#F0FDF4'
   }
 
-  // ✅ GERAR DADOS DE CURVA S BASEADOS EM DADOS REAIS DOS MARCOS
+  // 💰 FORMATAÇÃO DE VALORES
+  const formatarMoeda = (valor: number) => {
+    if (valor >= 1000000) {
+      return `R$ ${(valor / 1000000).toFixed(1)}M`
+    } else if (valor >= 1000) {
+      return `R$ ${(valor / 1000).toFixed(0)}k`
+    }
+    return `R$ ${valor.toLocaleString()}`
+  }
+
+  // ✅ GERAR DADOS PARA CURVA S FÍSICA
   const gerarDadosCurvaFisica = () => {
-    const progressoAtual = obra.metricas.avancooFisico
-    const marcosTotal = obra.metricas.totalMarcos
-    const marcosConcluidos = obra.metricas.marcosConcluidos
-    
     const pontos = []
     const hoje = new Date()
-    const mesAtual = hoje.getMonth()
     
-    // Criar 18 pontos (últimos 6 meses + 12 meses futuros)
     for (let i = -6; i < 12; i++) {
       const data = new Date(hoje)
       data.setMonth(data.getMonth() + i)
@@ -40,24 +45,24 @@ const CurvaTendencia: React.FC<CurvaTendenciaProps> = ({ obra }) => {
         year: '2-digit' 
       })
       
-      // Curva planejada (S-curve típica: lenta no início, acelerada no meio, lenta no final)
+      // Curva planejada (S-curve típica)
       let progressoPlanejado = 0
-      const progressoNormalizado = (i + 6) / 18 // 0 a 1
+      const progressoNormalizado = (i + 6) / 18
       if (progressoNormalizado <= 0.2) {
-        progressoPlanejado = progressoNormalizado * 50 // 0-10%
+        progressoPlanejado = progressoNormalizado * 50
       } else if (progressoNormalizado <= 0.8) {
-        progressoPlanejado = 10 + (progressoNormalizado - 0.2) * 150 // 10-100%
+        progressoPlanejado = 10 + (progressoNormalizado - 0.2) * 150
       } else {
         progressoPlanejado = 100
       }
       
-      // Progresso real baseado na distribuição atual dos marcos
+      // Progresso real baseado na distribuição atual
       let progressoReal = 0
-      if (i <= 0) { // Dados históricos e atual
+      if (i <= 0) {
         const fatorTempo = Math.min(1, (i + 6) / 6)
-        progressoReal = fatorTempo * progressoAtual
-      } else { // Projeção futura
-        progressoReal = progressoAtual
+        progressoReal = fatorTempo * (obra.metricas.avancooFisico || 0)
+      } else {
+        progressoReal = obra.metricas.avancooFisico || 0
       }
       
       const isHoje = i === 0
@@ -74,34 +79,80 @@ const CurvaTendencia: React.FC<CurvaTendenciaProps> = ({ obra }) => {
     return pontos
   }
 
-  const dadosCurva = gerarDadosCurvaFisica()
-  const progressoAtual = obra.metricas.avancooFisico
-  const marcosTotal = obra.metricas.totalMarcos
-  const marcosConcluidos = obra.metricas.marcosConcluidos
-  
-  // ✅ ANÁLISE AVANÇADA DE TENDÊNCIA
-  const calcularTendenciaAvancada = () => {
-    const percentualMarcos = marcosTotal > 0 ? (marcosConcluidos / marcosTotal) * 100 : 0
-    const eficienciaMarcos = percentualMarcos / 100
+  // 💰 GERAR DADOS PARA CURVA S FINANCEIRA
+  const gerarDadosCurvaFinanceira = () => {
+    const pontos = []
+    const hoje = new Date()
     
-    // Calcular velocidade baseada em marcos concluídos
-    const velocidadeMarcosPorMes = marcosConcluidos / 8 // Assumir 8 meses de trabalho
+    for (let i = -6; i < 12; i++) {
+      const data = new Date(hoje)
+      data.setMonth(data.getMonth() + i)
+      
+      const periodoTexto = data.toLocaleDateString('pt-BR', { 
+        month: 'short', 
+        year: '2-digit' 
+      })
+      
+      // Curva financeira planejada (geralmente acompanha a física com defasagem)
+      let financeiroPlanejado = 0
+      const progressoNormalizado = (i + 6) / 18
+      if (progressoNormalizado <= 0.15) {
+        financeiroPlanejado = progressoNormalizado * 30 // Início mais lento
+      } else if (progressoNormalizado <= 0.85) {
+        financeiroPlanejado = 5 + (progressoNormalizado - 0.15) * 135
+      } else {
+        financeiroPlanejado = 100
+      }
+      
+      // Progresso financeiro real
+      let financeiroReal = 0
+      if (i <= 0) {
+        const fatorTempo = Math.min(1, (i + 6) / 6)
+        financeiroReal = fatorTempo * (obra.dadosFinanceiros?.progressoFinanceiro || 0)
+      } else {
+        financeiroReal = obra.dadosFinanceiros?.progressoFinanceiro || 0
+      }
+      
+      const isHoje = i === 0
+      
+      pontos.push({
+        periodo: periodoTexto,
+        planejadoFinanceiro: Math.round(Math.min(100, Math.max(0, financeiroPlanejado))),
+        realFinanceiro: Math.round(Math.min(100, Math.max(0, financeiroReal))),
+        isHoje: isHoje,
+        mes: i
+      })
+    }
+    
+    return pontos
+  }
+
+  const dadosCurvaFisica = gerarDadosCurvaFisica()
+  const dadosCurvaFinanceira = gerarDadosCurvaFinanceira()
+  
+  // ✅ ANÁLISE DE TENDÊNCIA FÍSICA
+  const calcularTendenciaFisica = () => {
+    const marcosTotal = obra.metricas.totalMarcos || 0
+    const marcosConcluidos = obra.metricas.marcosConcluidos || 0
+    
+    const velocidadeMarcosPorMes = marcosConcluidos / 8
     const marcosRestantes = marcosTotal - marcosConcluidos
     const mesesParaConcluir = marcosRestantes / Math.max(velocidadeMarcosPorMes, 0.1)
+    const eficiencia = marcosTotal > 0 ? (marcosConcluidos / marcosTotal) : 0
     
     let tendencia = 'estavel'
-    let cor = cores.amarelo
+    let cor = coresRoraima.amarelo
     let texto = 'No Prazo'
     let icone = Calendar
     
-    if (eficienciaMarcos >= 0.8 && velocidadeMarcosPorMes > 0.5) {
+    if (eficiencia >= 0.8 && velocidadeMarcosPorMes > 0.5) {
       tendencia = 'acelerando'
-      cor = cores.verde
+      cor = coresRoraima.verde
       texto = 'Acelerando'
       icone = TrendingUp
-    } else if (eficienciaMarcos < 0.4 || velocidadeMarcosPorMes < 0.2) {
+    } else if (eficiencia < 0.4 || velocidadeMarcosPorMes < 0.2) {
       tendencia = 'atrasado'
-      cor = cores.vermelho
+      cor = coresRoraima.vermelho
       texto = 'Atrasado'
       icone = TrendingDown
     }
@@ -113,60 +164,45 @@ const CurvaTendencia: React.FC<CurvaTendenciaProps> = ({ obra }) => {
       icone,
       velocidadeMarcos: velocidadeMarcosPorMes,
       mesesRestantes: mesesParaConcluir,
-      eficiencia: eficienciaMarcos
+      eficiencia
     }
   }
 
-  const analise = calcularTendenciaAvancada()
-  
-  // ✅ CÁLCULO DE PROJEÇÃO DE CONCLUSÃO BASEADO EM MARCOS
-  const calcularProjecaoConclusao = () => {
-    if (progressoAtual >= 100) return { texto: 'Concluída', cor: cores.verde, status: 'concluida' }
-    if (marcosConcluidos === 0) return { texto: 'Não iniciada', cor: cores.cinza, status: 'nao_iniciada' }
+  // 💰 ANÁLISE DE TENDÊNCIA FINANCEIRA
+  const calcularTendenciaFinanceira = () => {
+    const eficienciaFinanceira = obra.dadosFinanceiros?.eficienciaExecucao || 100
+    const progressoFinanceiro = obra.dadosFinanceiros?.progressoFinanceiro || 0
+    const statusEficiencia = obra.dadosFinanceiros?.statusEficiencia || 'Eficiente'
     
-    const dataEstimada = new Date()
-    dataEstimada.setMonth(dataEstimada.getMonth() + Math.ceil(analise.mesesRestantes))
+    let cor = coresRoraima.verde
+    let icone = TrendingUp
+    let texto = 'Eficiente'
     
-    const textoData = dataEstimada.toLocaleDateString('pt-BR', { 
-      month: 'short', 
-      year: 'numeric' 
-    })
-    
-    // Determinar cor baseada na urgência
-    let cor = cores.verde
-    let status = 'no_prazo'
-    
-    if (analise.mesesRestantes > 12) {
-      cor = cores.vermelho
-      status = 'atrasado'
-    } else if (analise.mesesRestantes > 6) {
-      cor = cores.amarelo
-      status = 'alerta'
+    if (statusEficiencia === 'Crítico') {
+      cor = coresRoraima.vermelho
+      icone = TrendingDown
+      texto = 'Crítico'
+    } else if (statusEficiencia === 'Atenção') {
+      cor = coresRoraima.amarelo
+      icone = AlertTriangle
+      texto = 'Atenção'
     }
-    
-    return { texto: textoData, cor, status }
-  }
-
-  const projecao = calcularProjecaoConclusao()
-  
-  // ✅ ANÁLISE DE MARCOS CRÍTICOS
-  const analisarMarcosCriticos = () => {
-    const percentualConcluido = (marcosConcluidos / marcosTotal) * 100
-    const marcosRestantes = marcosTotal - marcosConcluidos
-    const criticidade = marcosRestantes > 10 ? 'alta' : marcosRestantes > 5 ? 'media' : 'baixa'
     
     return {
-      restantes: marcosRestantes,
-      percentual: percentualConcluido,
-      criticidade,
-      cor: criticidade === 'alta' ? cores.vermelho : 
-           criticidade === 'media' ? cores.amarelo : cores.verde
+      cor,
+      icone,
+      texto,
+      eficiencia: eficienciaFinanceira,
+      progresso: progressoFinanceiro,
+      valorRealizado: obra.dadosFinanceiros?.valorRealizado || 0,
+      orcamentoTotal: obra.dadosFinanceiros?.orcamentoTotal || 0
     }
   }
 
-  const marcos = analisarMarcosCriticos()
-
-  // ✅ TOOLTIP CUSTOMIZADO MELHORADO
+  const analiseFisica = calcularTendenciaFisica()
+  const analiseFinanceira = calcularTendenciaFinanceira()
+  
+  // ✅ TOOLTIP CUSTOMIZADO
   const TooltipCustomizado = ({ active, payload, label }: any) => {
     if (!active || !payload || !payload.length) return null
 
@@ -175,7 +211,7 @@ const CurvaTendencia: React.FC<CurvaTendenciaProps> = ({ obra }) => {
     return (
       <div style={{
         backgroundColor: 'white',
-        border: `2px solid ${isHoje ? cores.laranja : cores.azul}`,
+        border: `2px solid ${isHoje ? coresRoraima.laranja : coresRoraima.azul}`,
         borderRadius: '12px',
         padding: '16px',
         boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)',
@@ -187,10 +223,10 @@ const CurvaTendencia: React.FC<CurvaTendenciaProps> = ({ obra }) => {
           marginBottom: '8px',
           gap: '8px'
         }}>
-          {isHoje && <Clock style={{ width: '16px', height: '16px', color: cores.laranja }} />}
+          {isHoje && <Clock style={{ width: '16px', height: '16px', color: coresRoraima.laranja }} />}
           <p style={{ 
             fontWeight: 'bold', 
-            color: isHoje ? cores.laranja : cores.azul,
+            color: isHoje ? coresRoraima.laranja : coresRoraima.azul,
             margin: 0,
             fontSize: '14px'
           }}>
@@ -243,12 +279,12 @@ const CurvaTendencia: React.FC<CurvaTendenciaProps> = ({ obra }) => {
       <div style={{
         padding: '40px',
         textAlign: 'center',
-        color: cores.cinza,
+        color: coresRoraima.cinza,
         backgroundColor: '#f8fafc',
         borderRadius: '12px',
         border: '2px dashed #e2e8f0'
       }}>
-        <TrendingUp style={{ width: '48px', height: '48px', color: cores.cinza, margin: '0 auto 16px' }} />
+        <TrendingUp style={{ width: '48px', height: '48px', color: coresRoraima.cinza, margin: '0 auto 16px' }} />
         <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
           Dados insuficientes para análise
         </h3>
@@ -259,289 +295,448 @@ const CurvaTendencia: React.FC<CurvaTendenciaProps> = ({ obra }) => {
     )
   }
 
-  const IconeTendencia = analise.icone
+  const IconeTendenciaFisica = analiseFisica.icone
+  const IconeTendenciaFinanceira = analiseFinanceira.icone
 
   return (
     <div style={{ width: '100%' }}>
-      {/* ✅ INDICADORES AVANÇADOS DE AVANÇO FÍSICO */}
+      {/* 💰 INDICADORES GERAIS - FÍSICO + FINANCEIRO */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
         gap: '16px',
-        marginBottom: '24px'
+        marginBottom: '32px'
       }}>
-        {/* Análise de Tendência */}
+        {/* Análise Física */}
         <div style={{
-          padding: '16px',
-          backgroundColor: analise.tipo === 'acelerando' ? cores.verdeClaro : 
-                          analise.tipo === 'atrasado' ? '#fef2f2' : '#fefce8',
+          padding: '20px',
+          backgroundColor: analiseFisica.tipo === 'acelerando' ? coresRoraima.verdeClaro : 
+                          analiseFisica.tipo === 'atrasado' ? '#fef2f2' : '#fefce8',
           borderRadius: '12px',
-          border: `2px solid ${analise.cor}`,
+          border: `2px solid ${analiseFisica.cor}`,
           display: 'flex',
           alignItems: 'center',
-          gap: '12px'
+          gap: '16px'
         }}>
-          <IconeTendencia style={{ width: '28px', height: '28px', color: analise.cor }} />
+          <IconeTendenciaFisica style={{ width: '32px', height: '32px', color: analiseFisica.cor }} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '2px' }}>
-              Tendência de Progresso
+            <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '4px' }}>
+              Tendência Física
             </div>
-            <div style={{ fontSize: '16px', fontWeight: 'bold', color: analise.cor, marginBottom: '2px' }}>
-              {analise.texto}
+            <div style={{ fontSize: '18px', fontWeight: 'bold', color: analiseFisica.cor, marginBottom: '4px' }}>
+              {analiseFisica.texto}
             </div>
-            <div style={{ fontSize: '11px', color: '#6B7280' }}>
-              {analise.velocidadeMarcos.toFixed(1)} marcos/mês
+            <div style={{ fontSize: '12px', color: '#6B7280' }}>
+              {obra.metricas.avancooFisico}% • {obra.metricas.marcosConcluidos}/{obra.metricas.totalMarcos} marcos
             </div>
           </div>
         </div>
 
-        {/* Projeção de Conclusão */}
+        {/* 💰 Análise Financeira */}
         <div style={{
-          padding: '16px',
-          backgroundColor: projecao.status === 'concluida' ? cores.verdeClaro :
-                          projecao.status === 'atrasado' ? '#fef2f2' :
-                          projecao.status === 'alerta' ? '#fefce8' : cores.azulClaro,
+          padding: '20px',
+          backgroundColor: analiseFinanceira.texto === 'Eficiente' ? coresRoraima.verdeClaro :
+                          analiseFinanceira.texto === 'Atenção' ? '#fefce8' : '#fef2f2',
           borderRadius: '12px',
-          border: `2px solid ${projecao.cor}`,
+          border: `2px solid ${analiseFinanceira.cor}`,
           display: 'flex',
           alignItems: 'center',
-          gap: '12px'
+          gap: '16px'
         }}>
-          <Calendar style={{ width: '28px', height: '28px', color: projecao.cor }} />
+          <IconeTendenciaFinanceira style={{ width: '32px', height: '32px', color: analiseFinanceira.cor }} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '2px' }}>
-              Conclusão Estimada
+            <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '4px' }}>
+              Eficiência Financeira
             </div>
-            <div style={{ fontSize: '16px', fontWeight: 'bold', color: projecao.cor, marginBottom: '2px' }}>
-              {projecao.texto}
+            <div style={{ fontSize: '18px', fontWeight: 'bold', color: analiseFinanceira.cor, marginBottom: '4px' }}>
+              {analiseFinanceira.eficiencia}% • {analiseFinanceira.texto}
             </div>
-            <div style={{ fontSize: '11px', color: '#6B7280' }}>
-              {analise.mesesRestantes.toFixed(1)} meses restantes
+            <div style={{ fontSize: '12px', color: '#6B7280' }}>
+              {formatarMoeda(analiseFinanceira.valorRealizado)} de {formatarMoeda(analiseFinanceira.orcamentoTotal)}
             </div>
           </div>
         </div>
 
-        {/* Análise de Marcos */}
+        {/* Correlação com Aprovado */}
         <div style={{
-          padding: '16px',
-          backgroundColor: marcos.criticidade === 'alta' ? '#fef2f2' :
-                          marcos.criticidade === 'media' ? '#fefce8' : cores.verdeClaro,
+          padding: '20px',
+          backgroundColor: obra.dadosFinanceiros?.corelacionEncontrada ? coresRoraima.verdeClaro : '#f8fafc',
           borderRadius: '12px',
-          border: `2px solid ${marcos.cor}`,
+          border: `2px solid ${obra.dadosFinanceiros?.corelacionEncontrada ? coresRoraima.verde : coresRoraima.cinza}`,
           display: 'flex',
           alignItems: 'center',
-          gap: '12px'
+          gap: '16px'
         }}>
-          <Target style={{ width: '28px', height: '28px', color: marcos.cor }} />
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '2px' }}>
-              Marcos Físicos
-            </div>
-            <div style={{ fontSize: '16px', fontWeight: 'bold', color: marcos.cor, marginBottom: '2px' }}>
-              {marcosConcluidos}/{marcosTotal}
-            </div>
-            <div style={{ fontSize: '11px', color: '#6B7280' }}>
-              {marcos.percentual.toFixed(1)}% concluído
-            </div>
-          </div>
-        </div>
-
-        {/* Eficiência Atual */}
-        <div style={{
-          padding: '16px',
-          backgroundColor: analise.eficiencia >= 0.8 ? cores.verdeClaro :
-                          analise.eficiencia >= 0.6 ? '#fefce8' : '#fef2f2',
-          borderRadius: '12px',
-          border: `2px solid ${analise.eficiencia >= 0.8 ? cores.verde :
-                              analise.eficiencia >= 0.6 ? cores.amarelo : cores.vermelho}`,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px'
-        }}>
-          <TrendingUp style={{ 
-            width: '28px', 
-            height: '28px', 
-            color: analise.eficiencia >= 0.8 ? cores.verde :
-                   analise.eficiencia >= 0.6 ? cores.amarelo : cores.vermelho 
+          <BarChart3 style={{ 
+            width: '32px', 
+            height: '32px', 
+            color: obra.dadosFinanceiros?.corelacionEncontrada ? coresRoraima.verde : coresRoraima.cinza 
           }} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '2px' }}>
-              Eficiência Física
+            <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '4px' }}>
+              Orçamento Aprovado 2025
             </div>
             <div style={{ 
-              fontSize: '16px', 
+              fontSize: '18px', 
               fontWeight: 'bold', 
-              color: analise.eficiencia >= 0.8 ? cores.verde :
-                     analise.eficiencia >= 0.6 ? cores.amarelo : cores.vermelho,
-              marginBottom: '2px'
+              color: obra.dadosFinanceiros?.corelacionEncontrada ? coresRoraima.verde : coresRoraima.cinza,
+              marginBottom: '4px'
             }}>
-              {(analise.eficiencia * 100).toFixed(1)}%
+              {obra.dadosFinanceiros?.corelacionEncontrada ? 
+                formatarMoeda(obra.dadosFinanceiros.orcamentoAprovado) : 
+                'Não encontrado'
+              }
             </div>
-            <div style={{ fontSize: '11px', color: '#6B7280' }}>
-              {progressoAtual}% progresso físico
+            <div style={{ fontSize: '12px', color: '#6B7280' }}>
+              {obra.dadosFinanceiros?.corelacionEncontrada ? 
+                'Correlação identificada' : 
+                'Aguardando correlação'
+              }
             </div>
           </div>
         </div>
       </div>
 
-      {/* ✅ CURVA S FOCADA APENAS NO AVANÇO FÍSICO */}
+      {/* 📊 CURVAS S SEPARADAS - FÍSICA E FINANCEIRA */}
       <div style={{
-        backgroundColor: '#ffffff',
-        borderRadius: '12px',
-        padding: '24px',
-        border: '1px solid #e2e8f0',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: '24px'
       }}>
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          marginBottom: '20px',
+        {/* 📊 CURVA S FÍSICA */}
+        <div style={{
+          backgroundColor: '#ffffff',
+          borderRadius: '12px',
+          padding: '24px',
+          border: '1px solid #e2e8f0',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            marginBottom: '20px',
+            gap: '8px'
+          }}>
+            <Target style={{ width: '20px', height: '20px', color: coresRoraima.verde }} />
+            <h4 style={{ 
+              fontSize: '16px', 
+              fontWeight: '600', 
+              color: '#1f2937',
+              margin: 0
+            }}>
+              Curva S - Avanço Físico
+            </h4>
+          </div>
+
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart
+              data={dadosCurvaFisica}
+              margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              
+              <XAxis 
+                dataKey="periodo"
+                tick={{ fontSize: 10, fill: '#6B7280' }}
+                tickLine={{ stroke: '#e2e8f0' }}
+                axisLine={{ stroke: '#e2e8f0' }}
+                angle={-45}
+                textAnchor="end"
+                height={60}
+              />
+              
+              <YAxis 
+                tick={{ fontSize: 10, fill: '#6B7280' }}
+                tickLine={{ stroke: '#e2e8f0' }}
+                axisLine={{ stroke: '#e2e8f0' }}
+                domain={[0, 100]}
+                label={{ 
+                  value: 'Progresso (%)', 
+                  angle: -90, 
+                  position: 'insideLeft',
+                  style: { textAnchor: 'middle', fontSize: '11px', fill: '#6B7280' }
+                }}
+              />
+              
+              <Tooltip content={<TooltipCustomizado />} />
+              
+              <ReferenceLine 
+                x={dadosCurvaFisica.find(p => p.isHoje)?.periodo} 
+                stroke={coresRoraima.laranja} 
+                strokeWidth={2}
+                strokeDasharray="5 5"
+                label={{ value: "Hoje", position: "top", style: { fill: coresRoraima.laranja, fontSize: '10px' } }}
+              />
+              
+              <Line
+                type="monotone"
+                dataKey="planejado"
+                stroke={coresRoraima.azul}
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4, fill: coresRoraima.azul, strokeWidth: 2 }}
+                name="Planejado"
+              />
+              
+              <Line
+                type="monotone"
+                dataKey="realFisico"
+                stroke={coresRoraima.verde}
+                strokeWidth={3}
+                dot={{ fill: coresRoraima.verde, strokeWidth: 2, r: 3 }}
+                activeDot={{ r: 6, fill: coresRoraima.verde, strokeWidth: 2 }}
+                name="Real Físico"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* 💰 CURVA S FINANCEIRA */}
+        <div style={{
+          backgroundColor: '#ffffff',
+          borderRadius: '12px',
+          padding: '24px',
+          border: '1px solid #e2e8f0',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            marginBottom: '20px',
+            gap: '8px'
+          }}>
+            <DollarSign style={{ width: '20px', height: '20px', color: coresRoraima.laranja }} />
+            <h4 style={{ 
+              fontSize: '16px', 
+              fontWeight: '600', 
+              color: '#1f2937',
+              margin: 0
+            }}>
+              Curva S - Avanço Financeiro
+            </h4>
+          </div>
+
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart
+              data={dadosCurvaFinanceira}
+              margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              
+              <XAxis 
+                dataKey="periodo"
+                tick={{ fontSize: 10, fill: '#6B7280' }}
+                tickLine={{ stroke: '#e2e8f0' }}
+                axisLine={{ stroke: '#e2e8f0' }}
+                angle={-45}
+                textAnchor="end"
+                height={60}
+              />
+              
+              <YAxis 
+                tick={{ fontSize: 10, fill: '#6B7280' }}
+                tickLine={{ stroke: '#e2e8f0' }}
+                axisLine={{ stroke: '#e2e8f0' }}
+                domain={[0, 100]}
+                label={{ 
+                  value: 'Progresso (%)', 
+                  angle: -90, 
+                  position: 'insideLeft',
+                  style: { textAnchor: 'middle', fontSize: '11px', fill: '#6B7280' }
+                }}
+              />
+              
+              <Tooltip content={<TooltipCustomizado />} />
+              
+              <ReferenceLine 
+                x={dadosCurvaFinanceira.find(p => p.isHoje)?.periodo} 
+                stroke={coresRoraima.laranja} 
+                strokeWidth={2}
+                strokeDasharray="5 5"
+                label={{ value: "Hoje", position: "top", style: { fill: coresRoraima.laranja, fontSize: '10px' } }}
+              />
+              
+              <Line
+                type="monotone"
+                dataKey="planejadoFinanceiro"
+                stroke={coresRoraima.roxo}
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4, fill: coresRoraima.roxo, strokeWidth: 2 }}
+                name="Planejado Financeiro"
+              />
+              
+              <Line
+                type="monotone"
+                dataKey="realFinanceiro"
+                stroke={coresRoraima.laranja}
+                strokeWidth={3}
+                dot={{ fill: coresRoraima.laranja, strokeWidth: 2, r: 3 }}
+                activeDot={{ r: 6, fill: coresRoraima.laranja, strokeWidth: 2 }}
+                name="Real Financeiro"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* 📊 RESUMO DE PERFORMANCE FINANCEIRA */}
+      <div style={{
+        marginTop: '24px',
+        backgroundColor: '#f8fafc',
+        borderRadius: '12px',
+        padding: '20px',
+        border: '1px solid #e2e8f0'
+      }}>
+        <h4 style={{
+          fontSize: '16px',
+          fontWeight: '600',
+          color: '#1f2937',
+          marginBottom: '16px',
+          display: 'flex',
+          alignItems: 'center',
           gap: '8px'
         }}>
-          <TrendingUp style={{ width: '20px', height: '20px', color: cores.azul }} />
-          <h4 style={{ 
-            fontSize: '18px', 
-            fontWeight: '600', 
-            color: '#1f2937',
-            margin: 0
-          }}>
-            Curva S - Avanço Físico
-          </h4>
-        </div>
-
-        <ResponsiveContainer width="100%" height={350}>
-          <LineChart
-            data={dadosCurva}
-            margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-            
-            <XAxis 
-              dataKey="periodo"
-              tick={{ fontSize: 11, fill: '#6B7280' }}
-              tickLine={{ stroke: '#e2e8f0' }}
-              axisLine={{ stroke: '#e2e8f0' }}
-              angle={-45}
-              textAnchor="end"
-              height={60}
-            />
-            
-            <YAxis 
-              tick={{ fontSize: 11, fill: '#6B7280' }}
-              tickLine={{ stroke: '#e2e8f0' }}
-              axisLine={{ stroke: '#e2e8f0' }}
-              domain={[0, 100]}
-              label={{ 
-                value: 'Progresso (%)', 
-                angle: -90, 
-                position: 'insideLeft',
-                style: { textAnchor: 'middle', fontSize: '12px', fill: '#6B7280' }
-              }}
-            />
-            
-            <Tooltip content={<TooltipCustomizado />} />
-            
-            {/* Linha de referência "Hoje" */}
-            <ReferenceLine 
-              x={dadosCurva.find(p => p.isHoje)?.periodo} 
-              stroke={cores.laranja} 
-              strokeWidth={2}
-              strokeDasharray="5 5"
-              label={{ value: "Hoje", position: "top", style: { fill: cores.laranja, fontSize: '11px' } }}
-            />
-            
-            {/* Curva Planejada */}
-            <Line
-              type="monotone"
-              dataKey="planejado"
-              stroke={cores.azul}
-              strokeWidth={2}
-              dot={false}
-              activeDot={{ r: 4, fill: cores.azul, strokeWidth: 2 }}
-              name="Planejado"
-            />
-            
-            {/* Curva Real Física */}
-            <Line
-              type="monotone"
-              dataKey="realFisico"
-              stroke={cores.verde}
-              strokeWidth={3}
-              dot={{ fill: cores.verde, strokeWidth: 2, r: 3 }}
-              activeDot={{ r: 6, fill: cores.verde, strokeWidth: 2 }}
-              name="Real Físico"
-            />
-          </LineChart>
-        </ResponsiveContainer>
-
-        {/* ✅ RESUMO DE PERFORMANCE */}
+          <BarChart3 style={{ width: '18px', height: '18px', color: coresRoraima.azul }} />
+          Resumo de Performance
+        </h4>
+        
         <div style={{
-          marginTop: '20px',
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '12px'
+          gap: '16px'
         }}>
+          {/* Performance Física */}
           <div style={{
-            padding: '12px',
-            backgroundColor: '#f8fafc',
+            padding: '16px',
+            backgroundColor: '#ffffff',
             borderRadius: '8px',
             textAlign: 'center',
             border: '1px solid #e2e8f0'
           }}>
-            <div style={{ fontSize: '11px', color: '#6B7280', marginBottom: '4px' }}>
-              TAREFAS FÍSICAS
+            <div style={{ fontSize: '11px', color: '#6B7280', marginBottom: '8px' }}>
+              PERFORMANCE FÍSICA
             </div>
-            <div style={{ fontSize: '16px', fontWeight: 'bold', color: cores.azul }}>
-              {obra.metricas.tarefasConcluidas}/{obra.metricas.totalTarefas}
+            <div style={{ fontSize: '24px', fontWeight: 'bold', color: coresRoraima.verde, marginBottom: '4px' }}>
+              {obra.metricas.avancooFisico}%
+            </div>
+            <div style={{ fontSize: '12px', color: '#6B7280' }}>
+              {obra.metricas.marcosConcluidos}/{obra.metricas.totalMarcos} marcos
+            </div>
+            <div style={{ fontSize: '12px', color: '#6B7280' }}>
+              {obra.metricas.tarefasConcluidas}/{obra.metricas.totalTarefas} tarefas
             </div>
           </div>
           
+          {/* Performance Financeira */}
           <div style={{
-            padding: '12px',
-            backgroundColor: '#f8fafc',
+            padding: '16px',
+            backgroundColor: '#ffffff',
             borderRadius: '8px',
             textAlign: 'center',
             border: '1px solid #e2e8f0'
           }}>
-            <div style={{ fontSize: '11px', color: '#6B7280', marginBottom: '4px' }}>
-              MARCOS FÍSICOS
+            <div style={{ fontSize: '11px', color: '#6B7280', marginBottom: '8px' }}>
+              PERFORMANCE FINANCEIRA
             </div>
-            <div style={{ fontSize: '16px', fontWeight: 'bold', color: cores.verde }}>
-              {obra.metricas.marcosConcluidos}/{obra.metricas.totalMarcos}
+            <div style={{ fontSize: '24px', fontWeight: 'bold', color: coresRoraima.laranja, marginBottom: '4px' }}>
+              {obra.dadosFinanceiros?.progressoFinanceiro || 0}%
+            </div>
+            <div style={{ fontSize: '12px', color: '#6B7280' }}>
+              {formatarMoeda(analiseFinanceira.valorRealizado)}
+            </div>
+            <div style={{ fontSize: '12px', color: '#6B7280' }}>
+              de {formatarMoeda(analiseFinanceira.orcamentoTotal)}
             </div>
           </div>
           
+          {/* Eficiência */}
           <div style={{
-            padding: '12px',
-            backgroundColor: '#f8fafc',
+            padding: '16px',
+            backgroundColor: '#ffffff',
             borderRadius: '8px',
             textAlign: 'center',
             border: '1px solid #e2e8f0'
           }}>
-            <div style={{ fontSize: '11px', color: '#6B7280', marginBottom: '4px' }}>
-              STATUS ATUAL
+            <div style={{ fontSize: '11px', color: '#6B7280', marginBottom: '8px' }}>
+              EFICIÊNCIA DE EXECUÇÃO
             </div>
-            <div style={{ fontSize: '14px', fontWeight: 'bold', color: cores.cinza }}>
+            <div style={{ 
+              fontSize: '24px', 
+              fontWeight: 'bold', 
+              color: analiseFinanceira.cor,
+              marginBottom: '4px'
+            }}>
+              {obra.dadosFinanceiros?.eficienciaExecucao || 100}%
+            </div>
+            <div style={{ fontSize: '12px', color: analiseFinanceira.cor, fontWeight: '600' }}>
+              {obra.dadosFinanceiros?.statusEficiencia || 'Eficiente'}
+            </div>
+            <div style={{ fontSize: '11px', color: '#6B7280' }}>
+              vs previsto por avanço
+            </div>
+          </div>
+          
+          {/* Status Atual */}
+          <div style={{
+            padding: '16px',
+            backgroundColor: '#ffffff',
+            borderRadius: '8px',
+            textAlign: 'center',
+            border: '1px solid #e2e8f0'
+          }}>
+            <div style={{ fontSize: '11px', color: '#6B7280', marginBottom: '8px' }}>
+              STATUS GERAL
+            </div>
+            <div style={{ 
+              fontSize: '16px', 
+              fontWeight: 'bold', 
+              color: coresRoraima.cinza,
+              marginBottom: '4px',
+              lineHeight: '1.3'
+            }}>
               {obra.status}
+            </div>
+            <div style={{ fontSize: '11px', color: '#6B7280' }}>
+              {obra.temEnergizacao ? 'Com energização' : 'Sem energização'}
             </div>
           </div>
         </div>
 
-        {/* ✅ NOTA SOBRE DADOS FINANCEIROS */}
+        {/* 💰 NOTA SOBRE CORRELAÇÃO */}
         <div style={{
           marginTop: '16px',
           padding: '12px',
-          backgroundColor: '#fef3cd',
+          backgroundColor: obra.dadosFinanceiros?.corelacionEncontrada ? '#fef3cd' : '#f3f4f6',
           borderRadius: '8px',
-          border: '1px solid #fbbf24',
+          border: `1px solid ${obra.dadosFinanceiros?.corelacionEncontrada ? '#fbbf24' : '#d1d5db'}`,
           textAlign: 'center'
         }}>
-          <div style={{ fontSize: '12px', color: '#92400e', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-            <AlertTriangle style={{ width: '14px', height: '14px' }} />
-            <span>
-              <strong>Próxima fase:</strong> Curva S Financeira será implementada quando dados de orçamento estiverem disponíveis
-            </span>
+          <div style={{ 
+            fontSize: '12px', 
+            color: obra.dadosFinanceiros?.corelacionEncontrada ? '#92400e' : '#6b7280',
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            gap: '6px' 
+          }}>
+            {obra.dadosFinanceiros?.corelacionEncontrada ? (
+              <>
+                <DollarSign style={{ width: '14px', height: '14px' }} />
+                <span>
+                  <strong>Correlação encontrada:</strong> Comparação com orçamento aprovado 2025 ativa
+                </span>
+              </>
+            ) : (
+              <>
+                <AlertTriangle style={{ width: '14px', height: '14px' }} />
+                <span>
+                  <strong>Correlação pendente:</strong> Obra não encontrada no BaseInvestimento2025.xlsx
+                </span>
+              </>
+            )}
           </div>
         </div>
       </div>

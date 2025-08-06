@@ -1,5 +1,5 @@
 import { ObraUnificada } from '@/types/obra-unificada'
-import { Building2, Users, Wrench, Target, TrendingUp } from 'lucide-react'
+import { Building2, Users, Wrench, Target, TrendingUp, DollarSign } from 'lucide-react'
 
 interface ListaObrasUnificadasProps {
   obras: ObraUnificada[]
@@ -38,51 +38,47 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
     )
   }
 
-  // ✅ CORES POR STATUS HÍBRIDO - CRONOGRAMA + ETAPA
+  // ✅ CORES POR STATUS HÍBRIDO
   const getCorStatus = (status: string) => {
     const statusLower = status.toLowerCase()
     
-    // 🔍 ANÁLISE POR CRONOGRAMA (prioridade)
-    if (statusLower.includes('adiantado')) {
-      return coresRoraima.verde // Verde para adiantado
-    }
-    if (statusLower.includes('atrasado')) {
-      return coresRoraima.vermelho // Vermelho para atrasado
-    }
-    if (statusLower.includes('no prazo')) {
-      return coresRoraima.azul // Azul para no prazo
-    }
+    if (statusLower.includes('adiantado')) return coresRoraima.verde
+    if (statusLower.includes('atrasado')) return coresRoraima.vermelho
+    if (statusLower.includes('no prazo')) return coresRoraima.azul
+    if (statusLower.includes('fase de testes')) return coresRoraima.roxo
+    if (statusLower.includes('execução em andamento')) return coresRoraima.laranja
+    if (statusLower.includes('projeto executivo')) return coresRoraima.azul
+    if (statusLower.includes('procedimentos preliminares')) return coresRoraima.amarelo
+    if (statusLower.includes('comissionamento')) return coresRoraima.roxo
+    if (statusLower.includes('aprovação final') || statusLower.includes('análise avançada')) return coresRoraima.verde
+    if (statusLower.includes('concluído')) return coresRoraima.verde
+    if (statusLower.includes('não iniciado')) return coresRoraima.cinza
     
-    // 🔍 ANÁLISE POR ETAPA (se não tem cronograma)
-    if (statusLower.includes('fase de testes')) {
-      return coresRoraima.roxo // Roxo para testes
-    }
-    if (statusLower.includes('execução em andamento')) {
-      return coresRoraima.laranja // Laranja para execução
-    }
-    if (statusLower.includes('projeto executivo')) {
-      return coresRoraima.azul // Azul para projeto
-    }
-    if (statusLower.includes('procedimentos preliminares')) {
-      return coresRoraima.amarelo // Amarelo para preliminares
-    }
-    if (statusLower.includes('comissionamento')) {
-      return coresRoraima.roxo // Roxo para comissionamento
-    }
-    if (statusLower.includes('aprovação final') || statusLower.includes('análise avançada')) {
-      return coresRoraima.verde // Verde para aprovação
-    }
-    
-    // 🔍 STATUS ESPECIAIS
-    if (statusLower.includes('concluído')) {
-      return coresRoraima.verde
-    }
-    if (statusLower.includes('não iniciado')) {
-      return coresRoraima.cinza
-    }
-    
-    // Default
     return coresRoraima.amarelo
+  }
+
+  // 💰 CORES POR EFICIÊNCIA FINANCEIRA
+  const getCorEficiencia = (eficiencia: number) => {
+    if (eficiencia <= 120) return coresRoraima.verde    // Eficiente
+    if (eficiencia <= 150) return coresRoraima.amarelo  // Atenção
+    return coresRoraima.vermelho                         // Crítico
+  }
+
+  // 💰 TEXTO DE EFICIÊNCIA
+  const getTextoEficiencia = (eficiencia: number) => {
+    if (eficiencia <= 120) return 'Eficiente'
+    if (eficiencia <= 150) return 'Atenção'
+    return 'Crítico'
+  }
+
+  // 💰 FORMATAÇÃO DE VALORES
+  const formatarMoeda = (valor: number) => {
+    if (valor >= 1000000) {
+      return `R$ ${(valor / 1000000).toFixed(1)}M`
+    } else if (valor >= 1000) {
+      return `R$ ${(valor / 1000).toFixed(0)}k`
+    }
+    return `R$ ${valor.toLocaleString()}`
   }
 
   return (
@@ -116,12 +112,12 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
           <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
           <path d="M9 9h6M9 13h6M9 17h3"/>
         </svg>
-        RESUMO DAS OBRAS {showAll ? `(${obras.length} OBRAS)` : '(OBRA SELECIONADA)'}
+        RESUMO DAS OBRAS {showAll ? `(${obras.length} OBRAS)` : '(OBRA SELECIONADA)'} - FÍSICO + FINANCEIRO
       </h2>
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))',
         gap: '20px'
       }}>
         {obras.map((obra) => (
@@ -160,12 +156,12 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
               borderRadius: '12px 12px 0 0'
             }} />
 
-            {/* Header da obra - REORGANIZADO */}
+            {/* Header da obra */}
             <div style={{
               marginBottom: '16px',
               marginTop: '8px'
             }}>
-              {/* Título da obra - AGORA EM CIMA */}
+              {/* Título da obra */}
               <h3 style={{
                 fontSize: '18px',
                 fontWeight: '700',
@@ -200,7 +196,6 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
                   {obra.codigo}
                 </p>
                 
-                {/* Status ao lado do código */}
                 <div style={{
                   backgroundColor: getCorStatus(obra.status),
                   color: '#ffffff',
@@ -218,10 +213,10 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
               </div>
             </div>
 
-            {/* Métricas principais */}
+            {/* 💰 MÉTRICAS PRINCIPAIS - AGORA COM 3 COLUNAS */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
+              gridTemplateColumns: '1fr 1fr 1fr',
               gap: '16px',
               marginBottom: '20px'
             }}>
@@ -246,7 +241,7 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
                   }}>Progresso Geral</span>
                 </div>
                 <div style={{ 
-                  fontSize: '24px', 
+                  fontSize: '22px', 
                   fontWeight: 'bold', 
                   color: coresRoraima.azul,
                   fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
@@ -292,7 +287,7 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
                   }}>Avanço Físico</span>
                 </div>
                 <div style={{ 
-                  fontSize: '24px', 
+                  fontSize: '22px', 
                   fontWeight: 'bold', 
                   color: coresRoraima.verde,
                   fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
@@ -314,6 +309,105 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
                     borderRadius: '2px',
                     transition: 'width 0.5s ease'
                   }} />
+                </div>
+              </div>
+
+              {/* 💰 NOVA COLUNA - EFICIÊNCIA FINANCEIRA */}
+              <div style={{
+                backgroundColor: getCorEficiencia(obra.dadosFinanceiros.eficienciaExecucao) === coresRoraima.verde ? '#f0fdf4' :
+                                getCorEficiencia(obra.dadosFinanceiros.eficienciaExecucao) === coresRoraima.amarelo ? '#fefce8' : '#fef2f2',
+                border: `1px solid ${getCorEficiencia(obra.dadosFinanceiros.eficienciaExecucao)}`,
+                borderRadius: '8px',
+                padding: '12px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                  <DollarSign style={{ 
+                    width: '16px', 
+                    height: '16px', 
+                    color: getCorEficiencia(obra.dadosFinanceiros.eficienciaExecucao),
+                    marginRight: '6px'
+                  }} />
+                  <span style={{ 
+                    fontSize: '12px', 
+                    color: coresRoraima.cinza,
+                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+                  }}>Eficiência</span>
+                </div>
+                <div style={{ 
+                  fontSize: '22px', 
+                  fontWeight: 'bold', 
+                  color: getCorEficiencia(obra.dadosFinanceiros.eficienciaExecucao),
+                  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+                }}>
+                  {obra.dadosFinanceiros.eficienciaExecucao}%
+                </div>
+                <div style={{ 
+                  fontSize: '11px', 
+                  color: getCorEficiencia(obra.dadosFinanceiros.eficienciaExecucao),
+                  fontWeight: '600',
+                  marginTop: '2px'
+                }}>
+                  {getTextoEficiencia(obra.dadosFinanceiros.eficienciaExecucao)}
+                </div>
+              </div>
+            </div>
+
+            {/* 💰 SEÇÃO FINANCEIRA DETALHADA */}
+            <div style={{
+              backgroundColor: '#f8fafc',
+              borderRadius: '8px',
+              padding: '16px',
+              marginBottom: '16px',
+              border: '1px solid #e2e8f0'
+            }}>
+              <h4 style={{
+                fontSize: '14px',
+                fontWeight: '600',
+                color: coresRoraima.preto,
+                marginBottom: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}>
+                <DollarSign style={{ width: '16px', height: '16px', color: coresRoraima.laranja }} />
+                Informações Financeiras
+              </h4>
+              
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '12px',
+                fontSize: '13px'
+              }}>
+                <div>
+                  <div style={{ color: coresRoraima.cinza, marginBottom: '2px' }}>Orçamento Total:</div>
+                  <div style={{ fontWeight: '600', color: coresRoraima.preto }}>
+                    {formatarMoeda(obra.dadosFinanceiros.orcamentoTotal)}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ color: coresRoraima.cinza, marginBottom: '2px' }}>Valor Realizado:</div>
+                  <div style={{ fontWeight: '600', color: coresRoraima.azul }}>
+                    {formatarMoeda(obra.dadosFinanceiros.valorRealizado)}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ color: coresRoraima.cinza, marginBottom: '2px' }}>Orçamento Aprovado:</div>
+                  <div style={{ 
+                    fontWeight: '600', 
+                    color: obra.dadosFinanceiros.corelacionEncontrada ? coresRoraima.verde : coresRoraima.cinza 
+                  }}>
+                    {obra.dadosFinanceiros.corelacionEncontrada ? 
+                      formatarMoeda(obra.dadosFinanceiros.orcamentoAprovado) : 
+                      'Não encontrado'
+                    }
+                  </div>
+                </div>
+                <div>
+                  <div style={{ color: coresRoraima.cinza, marginBottom: '2px' }}>Progresso Financeiro:</div>
+                  <div style={{ fontWeight: '600', color: coresRoraima.roxo }}>
+                    {obra.dadosFinanceiros.progressoFinanceiro}%
+                  </div>
                 </div>
               </div>
             </div>
@@ -395,7 +489,7 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
               fontWeight: '600',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
             }}>
-              🔍 Clique para ver detalhes completos
+              🔍 Clique para ver detalhes completos + Curvas S
             </div>
           </div>
         ))}

@@ -1,6 +1,6 @@
-// src/types/obra-unificada.ts - TIPOS CORRETOS PARA TODOS OS COMPONENTES
+// src/types/obra-unificada.ts - TIPOS CORRIGIDOS PARA COMPATIBILIDADE TOTAL
 
-// ✅ MÉTRICAS EXATAS que MetricasObras.tsx espera
+// ✅ MÉTRICAS GERAIS COMPATÍVEIS COM TODOS OS COMPONENTES
 export interface MetricasGerais {
   totalObras: number
   obrasConcluidas: number
@@ -8,23 +8,29 @@ export interface MetricasGerais {
   progressoMedio: number
   atrasadas: number
   prazo: number
-  // ✅ ADICIONADAS: propriedades que os componentes usam
+  // ✅ MÉTRICAS FÍSICAS:
   totalMarcosFisicos: number
   marcosFisicosConcluidos: number
   mediaAvancaoFisico: number
-  obrasComExecucao: number  // ✅ CORRIGIDO: Propriedade faltante
-  // ✅ COMPATIBILIDADE: nomes alternativos que podem ser usados
+  obrasComExecucao: number
+  // 💰 MÉTRICAS FINANCEIRAS COMPATÍVEIS:
+  orcamentoTotalPortfolio: number
+  valorRealizadoPortfolio: number
+  orcamentoAprovadoPortfolio: number
+  eficienciaMediaPortfolio: number
+  progressoFinanceiroMedio: number
+  // ✅ COMPATIBILIDADE COM COMPONENTES EXISTENTES:
   mediaaProgressoGeral?: number
   mediaaAvancaoFisico?: number
 }
 
-// ✅ OBRA UNIFICADA com TODAS as propriedades que os componentes esperam
+// ✅ OBRA UNIFICADA COMPATÍVEL COM TODOS OS COMPONENTES
 export interface ObraUnificada {
   codigo: string
   nome: string
   status: string
   progressoGeral: number
-  avancooFisico: number  // ✅ ListaObrasUnificadas.tsx usa este nome
+  avancooFisico: number  // ✅ Nome que ListaObrasUnificadas.tsx usa
   avancaoFisico?: number // ✅ Alias para compatibilidade
   tarefasConcluidas: number
   totalTarefas: number
@@ -39,15 +45,24 @@ export interface ObraUnificada {
     tarefasConcluidas: number
     totalMarcos: number
     marcosConcluidos: number
+    // 💰 MÉTRICAS FINANCEIRAS NAS MÉTRICAS (para compatibilidade):
+    orcamentoTotal?: number
+    valorRealizado?: number
+    orcamentoAprovado?: number
+    eficienciaExecucao?: number
+    progressoFinanceiro?: number
   }
   temEnergizacao?: boolean
-  // ✅ ADICIONADAS: Informações extras para os cards
-  responsavel?: string
-  dataInicio?: string
-  dataTermino?: string
-  localizacao?: string
-  diasRestantes?: number
-  prioridade?: 'Alta' | 'Média' | 'Baixa'
+  // 💰 DADOS FINANCEIROS DA OBRA (estrutura que os componentes esperam):
+  dadosFinanceiros: {
+    orcamentoTotal: number
+    valorRealizado: number
+    orcamentoAprovado: number
+    eficienciaExecucao: number
+    progressoFinanceiro: number
+    statusEficiencia: 'Eficiente' | 'Atenção' | 'Crítico'
+    corelacionEncontrada: boolean
+  }
   fiscalizacao: {
     tarefas: TaskData[]
     progressoFornecimentos: number
@@ -64,8 +79,8 @@ export interface ObraUnificada {
 
 // ✅ ESTRUTURA QUE DashboardUnificado.tsx ESPERA
 export interface DashboardUnificadoType {
-  obras: ObraUnificada[]       // ✅ Array de obras
-  metricas: MetricasGerais     // ✅ Métricas já calculadas
+  obras: ObraUnificada[]
+  metricas: MetricasGerais
   ultimaAtualizacao: string
 }
 
@@ -90,7 +105,7 @@ export interface ListaObrasUnificadasProps {
   onObraClick?: (obra: ObraUnificada) => void
 }
 
-// ✅ TaskData expandido com propriedades que podem ser necessárias
+// ✅ TaskData COMPATÍVEL COM TODOS OS COMPONENTES
 export interface TaskData {
   'EDT': string | number
   'Nome da Tarefa': string
@@ -107,8 +122,9 @@ export interface TaskData {
   'Anotações'?: string | null
   'Nomes dos Recursos'?: string | null
   'Coordenada'?: string | null
+  'Orçamento (R$)'?: number | null // 💰 DADOS FINANCEIROS
   '_aba'?: string
-  // ✅ Propriedades adicionais que podem ser calculadas
+  // ✅ Propriedades adicionais calculadas
   tarefasConcluidas?: number
   totalTarefas?: number
   progressoFornecimentos?: number
