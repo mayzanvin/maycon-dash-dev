@@ -1,4 +1,4 @@
-// src/types/obra.ts - TIPOS BASE CORRIGIDOS PARA COMPATIBILIDADE
+// src/types/obra.ts - TIPOS BASE CORRIGIDOS
 
 export interface BaseObraData {
   EDT: string | number
@@ -11,36 +11,37 @@ export interface BaseObraData {
   LinhaBase_In_cio?: number | string
   LinhaBase_T_rmino?: number | string
 
-  // ✅ COLUNAS ADICIONAIS IMPORTANTES:
-  Predecessoras?: string | null     // Dependências da tarefa
-  Sucessoras?: string | null        // Tarefas dependentes
-  Marco?: string | null             // "SIM" para marcos físicos
-  Anota_es?: string | null          // Informações extras
-  Nomes_dos_Recursos?: string | null // Equipes (DTE, ENW, etc.)
-  Coordenada?: string | null        // Para localização no mapa
-  
-  // 💰 DADOS FINANCEIROS
-  Orcamento_R?: number | null       // Orçamento em R$ por tarefa
+  // ✅ COLUNAS ADICIONAIS:
+  Predecessoras?: string | null
+  Sucessoras?: string | null
+  Marco?: string | null
+  Anota_es?: string | null
+  Nomes_dos_Recursos?: string | null
+  Coordenada?: string | null
 
-  _aba?: string // Identificação da aba de origem
+  // 💰 DADOS FINANCEIROS
+  Orcamento_R?: number | null
+
+  _aba?: string
 }
 
-// 💰 DADOS DO BASEINVESTIMENTO2025
+// 💰 INTERFACE BASEINVESTIMENTO EXPORTADA CORRETAMENTE
 export interface BaseInvestimentoData {
-  ID_Projeto: string                // Ex: "DTE-31"
-  ProgramaOrcamentario: string      // Ex: "R200_DTE0020"
-  Descricao: string                 // Descrição da obra
-  ValorAprovado: number             // Valor aprovado em R$
+  ID_Projeto: string
+  ProgramaOrcamentario: string
+  Descricao: string
+  ValorAprovado: number
 }
 
 export interface ExcelData {
   [sheetName: string]: BaseObraData[]
 }
 
+// ✅ DASHBOARDDATA COM INVESTIMENTOS
 export interface DashboardData {
   todasTarefas: BaseObraData[]
   obrasPorAba: ExcelData
-  investimentos?: BaseInvestimentoData[]  // 💰 DADOS DE INVESTIMENTO
+  investimentos?: BaseInvestimentoData[]  // 💰 PROPRIEDADE ADICIONADA
   ultimaAtualizacao?: string
 }
 
@@ -55,7 +56,7 @@ export interface ObraMetrics {
   }
 }
 
-// Interface para compatibilidade com componentes existentes
+// Interface para compatibilidade
 export interface Obra {
   id: string
   nome: string

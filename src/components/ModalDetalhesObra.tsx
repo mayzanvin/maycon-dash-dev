@@ -1,7 +1,8 @@
+// src/components/ModalDetalhesObra.tsx - VERSÃO RICA SEM CURVATENDENCIA
 import { useEffect } from 'react'
 import { ObraUnificada } from '@/types/obra-unificada'
 import { X, Calendar, TrendingUp, AlertTriangle, CheckCircle, Building2, Users, Wrench } from 'lucide-react'
-import CurvaTendencia from './CurvaTendencia'
+// import CurvaTendencia from './CurvaTendencia' // TEMPORARIAMENTE REMOVIDO
 
 interface ModalDetalhesObraProps {
   obra: ObraUnificada | null
@@ -138,7 +139,7 @@ const ModalDetalhesObra: React.FC<ModalDetalhesObraProps> = ({ obra, onClose }) 
       <div style={{
         backgroundColor: coresRoraima.branco, // ✅ Fundo branco como o dashboard
         borderRadius: '16px', // ✅ Bordas mais arredondadas
-        maxWidth: '1000px',
+        maxWidth: '1200px', // ✅ Maior para acomodar gráficos
         width: '100%',
         maxHeight: '90vh',
         overflow: 'auto',
@@ -274,10 +275,10 @@ const ModalDetalhesObra: React.FC<ModalDetalhesObraProps> = ({ obra, onClose }) 
                 </span>
               </div>
               <div style={{ fontSize: '32px', fontWeight: 'bold', color: coresRoraima.azul, marginBottom: '4px' }}>
-                {obra.metricas.progressoGeral}%
+                {obra.progressoGeral}%
               </div>
               <div style={{ fontSize: '14px', color: coresRoraima.cinza }}>
-                {obra.metricas.tarefasConcluidas}/{obra.metricas.totalTarefas} tarefas concluídas
+                {obra.tarefasConcluidas}/{obra.totalTarefas} tarefas concluídas
               </div>
             </div>
 
@@ -296,10 +297,10 @@ const ModalDetalhesObra: React.FC<ModalDetalhesObraProps> = ({ obra, onClose }) 
                 </span>
               </div>
               <div style={{ fontSize: '32px', fontWeight: 'bold', color: coresRoraima.verde, marginBottom: '4px' }}>
-                {obra.metricas.avancooFisico}%
+                {obra.avancooFisico}%
               </div>
               <div style={{ fontSize: '14px', color: coresRoraima.cinza }}>
-                {obra.metricas.marcosConcluidos}/{obra.metricas.totalMarcos} marcos físicos
+                {obra.marcos.concluidos}/{obra.marcos.total} marcos físicos
               </div>
             </div>
 
@@ -333,6 +334,73 @@ const ModalDetalhesObra: React.FC<ModalDetalhesObraProps> = ({ obra, onClose }) 
             </div>
           </div>
 
+          {/* ✅ INFORMAÇÕES FINANCEIRAS MELHORADAS */}
+          <div style={{
+            backgroundColor: '#f8fafc',
+            borderRadius: '12px',
+            padding: '24px',
+            border: '1px solid #e2e8f0',
+            marginBottom: '24px'
+          }}>
+            <h4 style={{ 
+              fontSize: '18px', 
+              fontWeight: '600', 
+              marginBottom: '20px', 
+              color: coresRoraima.preto,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              💰 Informações Financeiras
+            </h4>
+            
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+              gap: '16px' 
+            }}>
+              <div>
+                <div style={{ fontSize: '12px', color: coresRoraima.cinza, marginBottom: '4px' }}>
+                  Orçamento Total:
+                </div>
+                <div style={{ fontSize: '16px', fontWeight: 'bold', color: coresRoraima.preto }}>
+                  R$ {obra.dadosFinanceiros.orcamentoTotal.toLocaleString()}
+                </div>
+              </div>
+              
+              <div>
+                <div style={{ fontSize: '12px', color: coresRoraima.cinza, marginBottom: '4px' }}>
+                  Valor Realizado:
+                </div>
+                <div style={{ fontSize: '16px', fontWeight: 'bold', color: coresRoraima.azul }}>
+                  R$ {obra.dadosFinanceiros.valorRealizado.toLocaleString()}
+                </div>
+              </div>
+
+              <div>
+                <div style={{ fontSize: '12px', color: coresRoraima.cinza, marginBottom: '4px' }}>
+                  Progresso Financeiro:
+                </div>
+                <div style={{ fontSize: '16px', fontWeight: 'bold', color: coresRoraima.verde }}>
+                  {obra.dadosFinanceiros.progressoFinanceiro}%
+                </div>
+              </div>
+
+              <div>
+                <div style={{ fontSize: '12px', color: coresRoraima.cinza, marginBottom: '4px' }}>
+                  Correlação Encontrada:
+                </div>
+                <div style={{ 
+                  fontSize: '16px', 
+                  fontWeight: 'bold', 
+                  color: obra.dadosFinanceiros.corelacionEncontrada ? coresRoraima.verde : coresRoraima.vermelho
+                }}>
+                  {obra.dadosFinanceiros.corelacionEncontrada ? 'Sim' : 'Não'}
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* ✅ RESUMO DE TAREFAS */}
           <div style={{
             display: 'grid',
@@ -349,7 +417,7 @@ const ModalDetalhesObra: React.FC<ModalDetalhesObraProps> = ({ obra, onClose }) 
             }}>
               <Building2 style={{ width: '24px', height: '24px', color: coresRoraima.cinza, margin: '0 auto 8px' }} />
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: coresRoraima.preto }}>
-                {obra.metricas.totalTarefas}
+                {obra.totalTarefas}
               </div>
               <div style={{ fontSize: '12px', color: coresRoraima.cinza }}>Total de Tarefas</div>
             </div>
@@ -363,7 +431,7 @@ const ModalDetalhesObra: React.FC<ModalDetalhesObraProps> = ({ obra, onClose }) 
             }}>
               <Users style={{ width: '24px', height: '24px', color: coresRoraima.verde, margin: '0 auto 8px' }} />
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: coresRoraima.verde }}>
-                {obra.metricas.tarefasConcluidas}
+                {obra.tarefasConcluidas}
               </div>
               <div style={{ fontSize: '12px', color: coresRoraima.cinza }}>Concluídas</div>
             </div>
@@ -377,7 +445,7 @@ const ModalDetalhesObra: React.FC<ModalDetalhesObraProps> = ({ obra, onClose }) 
             }}>
               <Wrench style={{ width: '24px', height: '24px', color: coresRoraima.roxo, margin: '0 auto 8px' }} />
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: coresRoraima.roxo }}>
-                {obra.metricas.marcosConcluidos}/{obra.metricas.totalMarcos}
+                {obra.marcos.concluidos}/{obra.marcos.total}
               </div>
               <div style={{ fontSize: '12px', color: coresRoraima.cinza }}>Marcos Físicos</div>
             </div>
@@ -464,13 +532,245 @@ const ModalDetalhesObra: React.FC<ModalDetalhesObraProps> = ({ obra, onClose }) 
             Curva de Tendência - Realizado vs Previsto
           </h3>
           
+          {/* ✅ PLACEHOLDER PARA CURVA DE TENDÊNCIA */}
           <div style={{
             backgroundColor: '#f8fafc',
             borderRadius: '12px',
             border: '1px solid #e2e8f0',
-            padding: '20px'
+            padding: '40px',
+            textAlign: 'center'
           }}>
-            <CurvaTendencia obra={obra} />
+            <h4 style={{ 
+              fontSize: '18px', 
+              fontWeight: '600', 
+              color: coresRoraima.preto, 
+              marginBottom: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }}>
+              <TrendingUp style={{ width: '20px', height: '20px', color: coresRoraima.azul }} />
+              📈 Curva S - Análise de Tendência
+            </h4>
+            <p style={{ 
+              fontSize: '14px', 
+              color: coresRoraima.cinza, 
+              marginBottom: '24px' 
+            }}>
+              Gráficos detalhados de progresso físico e financeiro
+            </p>
+            
+            {/* Cards de Performance */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+              gap: '16px',
+              marginBottom: '20px'
+            }}>
+              <div style={{
+                padding: '20px',
+                backgroundColor: coresRoraima.branco,
+                borderRadius: '10px',
+                border: '2px solid #10b981',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
+              }}>
+                <div style={{ 
+                  fontSize: '12px', 
+                  color: coresRoraima.cinza, 
+                  marginBottom: '8px',
+                  textTransform: 'uppercase',
+                  fontWeight: '600' 
+                }}>
+                  Performance Física
+                </div>
+                <div style={{ 
+                  fontSize: '28px', 
+                  fontWeight: 'bold', 
+                  color: coresRoraima.verde,
+                  marginBottom: '4px'
+                }}>
+                  {obra.avancooFisico}%
+                </div>
+                <div style={{ fontSize: '11px', color: coresRoraima.cinza }}>
+                  {obra.marcos.concluidos}/{obra.marcos.total} marcos
+                </div>
+              </div>
+              
+              <div style={{
+                padding: '20px',
+                backgroundColor: coresRoraima.branco,
+                borderRadius: '10px',
+                border: `2px solid ${
+                  obra.dadosFinanceiros.statusEficiencia === 'Eficiente' ? coresRoraima.verde :
+                  obra.dadosFinanceiros.statusEficiencia === 'Atenção' ? coresRoraima.amarelo :
+                  coresRoraima.vermelho
+                }`,
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
+              }}>
+                <div style={{ 
+                  fontSize: '12px', 
+                  color: coresRoraima.cinza, 
+                  marginBottom: '8px',
+                  textTransform: 'uppercase',
+                  fontWeight: '600' 
+                }}>
+                  Performance Financeira
+                </div>
+                <div style={{ 
+                  fontSize: '28px', 
+                  fontWeight: 'bold', 
+                  color: obra.dadosFinanceiros.statusEficiencia === 'Eficiente' ? coresRoraima.verde :
+                         obra.dadosFinanceiros.statusEficiencia === 'Atenção' ? coresRoraima.amarelo :
+                         coresRoraima.vermelho,
+                  marginBottom: '4px'
+                }}>
+                  {obra.dadosFinanceiros.progressoFinanceiro}%
+                </div>
+                <div style={{ fontSize: '11px', color: coresRoraima.cinza }}>
+                  {obra.dadosFinanceiros.statusEficiencia}
+                </div>
+              </div>
+              
+              <div style={{
+                padding: '20px',
+                backgroundColor: coresRoraima.branco,
+                borderRadius: '10px',
+                border: '2px solid #8b5cf6',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
+              }}>
+                <div style={{ 
+                  fontSize: '12px', 
+                  color: coresRoraima.cinza, 
+                  marginBottom: '8px',
+                  textTransform: 'uppercase',
+                  fontWeight: '600' 
+                }}>
+                  Eficiência Execução
+                </div>
+                <div style={{ 
+                  fontSize: '28px', 
+                  fontWeight: 'bold', 
+                  color: coresRoraima.roxo,
+                  marginBottom: '4px'
+                }}>
+                  {obra.dadosFinanceiros.eficienciaExecucao}%
+                </div>
+                <div style={{ fontSize: '11px', color: coresRoraima.cinza }}>
+                  vs previsto
+                </div>
+              </div>
+            </div>
+
+            {/* Nota sobre desenvolvimento */}
+            <div style={{
+              padding: '12px 16px',
+              backgroundColor: '#fef3cd',
+              borderRadius: '8px',
+              border: '1px solid #fbbf24',
+              fontSize: '13px',
+              color: '#92400e'
+            }}>
+              ⚡ <strong>Gráficos interativos</strong> em desenvolvimento - Dados de performance disponíveis acima
+            </div>
+          </div>
+
+          {/* ✅ DETALHES DE FISCALIZAÇÃO E EXECUÇÃO */}
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: '1fr 1fr', 
+            gap: '20px',
+            marginTop: '32px'
+          }}>
+            <div style={{
+              backgroundColor: '#f8fafc',
+              borderRadius: '12px',
+              padding: '20px',
+              border: '1px solid #e2e8f0'
+            }}>
+              <h4 style={{ 
+                fontSize: '16px', 
+                fontWeight: '600', 
+                marginBottom: '16px', 
+                color: coresRoraima.preto,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                📋 Fiscalização
+              </h4>
+              <div style={{ display: 'grid', gap: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '14px', color: coresRoraima.cinza }}>Tarefas Concluídas:</span>
+                  <span style={{ fontSize: '14px', fontWeight: 'bold' }}>
+                    {obra.fiscalizacao.tarefasConcluidas || 0}/{obra.fiscalizacao.totalTarefas || 0}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '14px', color: coresRoraima.cinza }}>Progresso Fornecimentos:</span>
+                  <span style={{ fontSize: '14px', fontWeight: 'bold', color: coresRoraima.azul }}>
+                    {obra.fiscalizacao.progressoFornecimentos}%
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '14px', color: coresRoraima.cinza }}>Progresso Médio:</span>
+                  <span style={{ fontSize: '14px', fontWeight: 'bold', color: coresRoraima.verde }}>
+                    {obra.fiscalizacao.progressoMedio}%
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '14px', color: coresRoraima.cinza }}>Total de Tarefas:</span>
+                  <span style={{ fontSize: '14px', fontWeight: 'bold' }}>
+                    {obra.fiscalizacao.tarefas.length}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div style={{
+              backgroundColor: '#f8fafc',
+              borderRadius: '12px',
+              padding: '20px',
+              border: '1px solid #e2e8f0'
+            }}>
+              <h4 style={{ 
+                fontSize: '16px', 
+                fontWeight: '600', 
+                marginBottom: '16px', 
+                color: coresRoraima.preto,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                🏗️ Execução
+              </h4>
+              <div style={{ display: 'grid', gap: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '14px', color: coresRoraima.cinza }}>Tarefas Concluídas:</span>
+                  <span style={{ fontSize: '14px', fontWeight: 'bold' }}>
+                    {obra.execucao.tarefasConcluidas || 0}/{obra.execucao.totalTarefas || 0}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '14px', color: coresRoraima.cinza }}>Progresso Execução:</span>
+                  <span style={{ fontSize: '14px', fontWeight: 'bold', color: coresRoraima.azul }}>
+                    {obra.execucao.progressoExecucao}%
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '14px', color: coresRoraima.cinza }}>Progresso Médio:</span>
+                  <span style={{ fontSize: '14px', fontWeight: 'bold', color: coresRoraima.verde }}>
+                    {obra.execucao.progressoMedio}%
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '14px', color: coresRoraima.cinza }}>Total de Tarefas:</span>
+                  <span style={{ fontSize: '14px', fontWeight: 'bold' }}>
+                    {obra.execucao.tarefas.length}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

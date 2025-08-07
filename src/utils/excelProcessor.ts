@@ -1,4 +1,4 @@
-// src/utils/excelProcessor.ts - CORREÇÃO EXTRAÇÃO ORÇAMENTO
+// src/utils/excelProcessor.ts - CORREÇÃO ESPECÍFICA DOS TIPOS
 import * as XLSX from 'xlsx'
 import { DashboardData, BaseObraData, ExcelData, BaseInvestimentoData } from '@/types/obra'
 
@@ -87,55 +87,29 @@ export class ExcelProcessor {
       for (let col = 0; col < totalCols; col++) {
         const cellAddr = XLSX.utils.encode_cell({ r: 0, c: col })
         const cell = worksheet[cellAddr]
-        headers[col] = cell ? String(cell.v || '').trim() : ''
+        headers[col] = cell ? String(cell.v || '') : ''
       }
       
-      console.log('📋 HEADERS ENCONTRADOS:')
-      headers.forEach((header, index) => {
-        if (header) {
-          console.log(`   ${index}: "${header}"`)
-        }
-      })
+      console.log('📋 Headers encontrados:', headers)
       
-      // 🔍 BUSCA INTELIGENTE DA COLUNA ORÇAMENTO
-      let posicaoOrcamento = -1
-      const padroesBusca = [
-        'orçamento (r$)',
-        'orçamento',
-        'orcamento',
-        'orçamento (r)',
-        'valor (r$)',
-        'valor',
-        'custo',
-        'budget'
-      ]
-      
-      for (let i = 0; i < headers.length; i++) {
-        const headerLower = headers[i].toLowerCase()
-        if (padroesBusca.some(padrao => headerLower.includes(padrao))) {
-          posicaoOrcamento = i
-          console.log(`✅ COLUNA ORÇAMENTO ENCONTRADA: Posição ${i} - "${headers[i]}"`)
-          break
-        }
-      }
+      // 💰 BUSCA INTELIGENTE DA COLUNA ORÇAMENTO
+      const posicaoOrcamento = this.encontrarColunaOrcamento(headers)
+      console.log(`💰 Posição da coluna orçamento: ${posicaoOrcamento}`)
       
       if (posicaoOrcamento === -1) {
-        console.log('⚠️ Coluna de orçamento não encontrada - tentando posição 15 como fallback')
-        if (totalCols > 15) {
-          posicaoOrcamento = 15
-          console.log(`🔄 Usando posição 15: "${headers[15] || 'Sem nome'}"`)
-        }
+        console.log('⚠️ Coluna de orçamento não encontrada nesta aba')
       }
       
       const tarefasAba: BaseObraData[] = []
       let valoresOrcamentoEncontrados = 0
       let exemplosMostrados = 0
       
-      // Processar linhas de dados
+      // Processar dados linha por linha (pular header - linha 0)
       for (let row = 1; row < totalRows; row++) {
         try {
-          // Extrair dados da linha
           const rowData: any[] = []
+          
+          // Extrair dados de cada célula manualmente
           for (let col = 0; col < totalCols; col++) {
             const cellAddr = XLSX.utils.encode_cell({ r: row, c: col })
             const cell = worksheet[cellAddr]
@@ -163,24 +137,24 @@ export class ExcelProcessor {
             }
           }
           
-          // Criar objeto BaseObraData
+          // ✅ CRIAR OBJETO BASEOBRADA COM TIPOS CORRETOS
           const tarefa: BaseObraData = {
             EDT: this.getStringValue(rowData[0]) || `${sheetName}_${row}`,
             Nome_da_Tarefa: this.getStringValue(rowData[1]) || '',
             N_vel: this.getNumberValue(rowData[2]) || 0,
-            Resumo_pai: this.getStringValue(rowData[3]) || null,
+            Resumo_pai: this.getStringValue(rowData[3]) || undefined, // ✅ CORRIGIDO: undefined em vez de null
             Marco: this.getStringValue(rowData[4]) || null,
             Data_In_cio: this.processDate(rowData[5]) || '',
             Data_T_rmino: this.processDate(rowData[6]) || '',
             Porcentagem_Conclu_do: this.getNumberValue(rowData[7]) || 0,
-            LinhaBase_In_cio: this.processDate(rowData[8]) || '',
-            LinhaBase_T_rmino: this.processDate(rowData[9]) || '',
+            LinhaBase_In_cio: this.processDate(rowData[8]) || undefined,
+            LinhaBase_T_rmino: this.processDate(rowData[9]) || undefined,
             Predecessoras: this.getStringValue(rowData[10]) || null,
             Sucessoras: this.getStringValue(rowData[11]) || null,
             Anota_es: this.getStringValue(rowData[12]) || null,
             Nomes_dos_Recursos: this.getStringValue(rowData[13]) || null,
             Coordenada: this.getStringValue(rowData[14]) || null,
-            Orcamento_R: orcamentoValue, // ⭐ VALOR CORRIGIDO
+            Orcamento_R: orcamentoValue,
             _aba: sheetName
           }
           
@@ -197,15 +171,15 @@ export class ExcelProcessor {
       
       obrasPorAba[sheetName] = tarefasAba
       
-      console.log(`✅ Processamento concluído:`)
-      console.log(`   📊 Tarefas válidas: ${tarefasAba.length}`)
-      console.log(`   💰 Com orçamento > 0: ${valoresOrcamentoEncontrados}`)
+      console.log(`✅ Aba ${sheetName} processada:`)
+      console.log(`   📊 ${tarefasAba.length} tarefas válidas`)
+      console.log(`   💰 ${valoresOrcamentoEncontrados} tarefas com orçamento`)
       
       if (valoresOrcamentoEncontrados > 0) {
-        const valorTotal = tarefasAba
+        const somaOrcamento = tarefasAba
           .filter(t => t.Orcamento_R && t.Orcamento_R > 0)
           .reduce((acc, t) => acc + (t.Orcamento_R || 0), 0)
-        console.log(`   💰 Valor total da aba: R$ ${valorTotal.toLocaleString()}`)
+        console.log(`   💰 Soma orçamentos: R$ ${somaOrcamento.toLocaleString()}`)
       }
     }
     
@@ -216,154 +190,135 @@ export class ExcelProcessor {
     }
   }
   
-  // 💰 CONVERSÃO ROBUSTA DE VALORES MONETÁRIOS
+  // 💰 ENCONTRAR COLUNA DE ORÇAMENTO
+  private static encontrarColunaOrcamento(headers: string[]): number {
+    const padroes = [
+      /orçamento.*\(r\$\)/i,
+      /orcamento.*\(r\$\)/i,
+      /orçamento/i,
+      /orcamento/i,
+      /budget/i,
+      /valor.*r\$/i,
+      /custo.*r\$/i,
+      /preço/i,
+      /preco/i
+    ]
+    
+    for (let i = 0; i < headers.length; i++) {
+      const header = String(headers[i] || '').toLowerCase().trim()
+      
+      for (const padrao of padroes) {
+        if (padrao.test(header)) {
+          console.log(`🎯 Coluna de orçamento encontrada: "${headers[i]}" na posição ${i}`)
+          return i
+        }
+      }
+    }
+    
+    return -1
+  }
+  
+  // 💰 CONVERSÃO ROBUSTA DE MOEDA
   private static conversaoRobustaMoeda(value: any): number | null {
     if (value === null || value === undefined || value === '') {
       return null
     }
     
-    // Se já é um número válido
+    // Se já é número válido
     if (typeof value === 'number' && !isNaN(value) && value > 0) {
-      return value
+      return Math.round(value)
     }
     
-    // Se é string, fazer limpeza progressiva
+    // Se é string, fazer limpeza
     if (typeof value === 'string') {
       let cleanValue = value
-        .replace(/[R$\s]/g, '')           // Remove R$, espaços
-        .replace(/\./g, '')               // Remove pontos (separadores de milhares)
-        .replace(',', '.')                // Troca vírgula por ponto decimal
+        .replace(/[R$\s]/g, '')         // Remove R$, espaços
+        .replace(/\./g, '')             // Remove pontos de milhares
+        .replace(',', '.')              // Vírgula vira ponto decimal
         .trim()
       
-      // Tentar conversão
-      let num = Number(cleanValue)
-      if (!isNaN(num) && num > 0) {
-        return num
-      }
-      
-      // Tentar sem remover pontos (caso seja decimal americano)
-      cleanValue = value
-        .replace(/[R$\s]/g, '')
-        .trim()
-      
-      num = Number(cleanValue)
-      if (!isNaN(num) && num > 0) {
-        return num
-      }
-    }
-    
-    // Última tentativa: conversão direta
-    const directNum = Number(value)
-    if (!isNaN(directNum) && directNum > 0) {
-      return directNum
+      const numValue = parseFloat(cleanValue)
+      return (!isNaN(numValue) && numValue > 0) ? Math.round(numValue) : null
     }
     
     return null
   }
   
+  // AUXILIARES DE CONVERSÃO
+  private static getStringValue(value: any): string | null {
+    if (value === null || value === undefined || value === '') return null
+    return String(value).trim() || null
+  }
+  
+  private static getNumberValue(value: any): number {
+    if (typeof value === 'number') return value
+    if (typeof value === 'string') {
+      const num = parseFloat(value)
+      return isNaN(num) ? 0 : num
+    }
+    return 0
+  }
+  
+  private static processDate(value: any): string | number {
+    if (typeof value === 'number') return value
+    if (typeof value === 'string') return value
+    if (value instanceof Date) return value.getTime()
+    return ''
+  }
+  
   // 💰 PROCESSAR BASEINVESTIMENTO2025.XLSX
   private static async processarBaseInvestimento(caminhoArquivo: string): Promise<BaseInvestimentoData[]> {
+    console.log('💰 Carregando BaseInvestimento2025.xlsx...')
+    
     try {
-      console.log('\n💰 === PROCESSANDO BASEINVESTIMENTO2025.XLSX ===')
-      
       const response = await fetch(caminhoArquivo)
       if (!response.ok) {
-        console.log('⚠️ BaseInvestimento2025.xlsx não encontrado - continuando sem dados de investimento')
+        console.log('⚠️ BaseInvestimento2025.xlsx não encontrado')
         return []
       }
       
       const arrayBuffer = await response.arrayBuffer()
-      const workbook = XLSX.read(arrayBuffer, { type: 'array', cellDates: true })
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' })
       
       const firstSheet = workbook.SheetNames[0]
       const worksheet = workbook.Sheets[firstSheet]
       
-      // Converter usando método robusto
-      const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1')
-      const totalRows = range.e.r + 1
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+        header: 1,
+        defval: null
+      }) as any[][]
       
-      console.log(`📊 BaseInvestimento: ${totalRows} linhas`)
+      if (jsonData.length < 2) {
+        console.log('⚠️ BaseInvestimento vazio')
+        return []
+      }
+      
+      const headers = jsonData[0]
+      console.log('💰 Headers BaseInvestimento:', headers)
       
       const investimentos: BaseInvestimentoData[] = []
       
-      for (let row = 1; row < totalRows; row++) {
-        try {
-          const rowData: any[] = []
-          for (let col = 0; col <= 3; col++) { // Só precisamos de 4 colunas
-            const cellAddr = XLSX.utils.encode_cell({ r: row, c: col })
-            const cell = worksheet[cellAddr]
-            rowData[col] = cell ? cell.v : null
-          }
-          
-          const investimento: BaseInvestimentoData = {
-            ID_Projeto: this.getStringValue(rowData[0]) || '',
-            ProgramaOrcamentario: this.getStringValue(rowData[1]) || '',
-            Descricao: this.getStringValue(rowData[2]) || '',
-            ValorAprovado: this.conversaoRobustaMoeda(rowData[3]) || 0
-          }
-          
-          if (investimento.ID_Projeto && investimento.ID_Projeto.trim() !== '') {
-            investimentos.push(investimento)
-          }
-          
-        } catch (error) {
-          console.log(`⚠️ Erro linha ${row + 1} BaseInvestimento:`, error)
+      for (let i = 1; i < jsonData.length; i++) {
+        const row = jsonData[i]
+        
+        const investimento: BaseInvestimentoData = {
+          ID_Projeto: String(row[0] || ''),
+          ProgramaOrcamentario: String(row[1] || ''),
+          Descricao: String(row[2] || ''),
+          ValorAprovado: Number(row[3]) || 0
+        }
+        
+        if (investimento.ID_Projeto && investimento.ValorAprovado > 0) {
+          investimentos.push(investimento)
         }
       }
       
-      console.log(`✅ BaseInvestimento processado: ${investimentos.length} registros`)
-      
-      // Mostrar alguns exemplos
-      console.log('💰 Exemplos de investimentos:')
-      investimentos.slice(0, 3).forEach((inv, i) => {
-        console.log(`   ${i + 1}. ${inv.ID_Projeto} | ${inv.ProgramaOrcamentario} | R$ ${inv.ValorAprovado.toLocaleString()}`)
-      })
-      
+      console.log(`💰 ${investimentos.length} investimentos carregados`)
       return investimentos
       
     } catch (error) {
-      console.error('❌ Erro ao processar BaseInvestimento:', error)
+      console.log('⚠️ Erro ao carregar BaseInvestimento:', error)
       return []
     }
-  }
-  
-  // 🔧 UTILITÁRIOS ROBUSTOS
-  private static getStringValue(value: any): string | null {
-    if (value === null || value === undefined || value === '') {
-      return null
-    }
-    return String(value).trim()
-  }
-  
-  private static getNumberValue(value: any): number {
-    if (value === null || value === undefined || value === '') {
-      return 0
-    }
-    
-    const num = Number(value)
-    return isNaN(num) ? 0 : num
-  }
-  
-  private static processDate(value: any): string | number {
-    if (value === null || value === undefined || value === '') {
-      return ''
-    }
-    
-    if (value instanceof Date) {
-      return value.getTime()
-    }
-    
-    if (typeof value === 'number' && value > 0) {
-      return value
-    }
-    
-    if (typeof value === 'string') {
-      const date = new Date(value)
-      if (!isNaN(date.getTime())) {
-        return date.getTime()
-      }
-    }
-    
-    return ''
   }
 }
