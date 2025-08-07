@@ -1,4 +1,4 @@
-// src/types/obra-unificada.ts - TIPOS CORRIGIDOS PARA COMPATIBILIDADE TOTAL
+// src/types/obra-unificada.ts - ADICIONANDO progressoMedio PARA CURVATENDENCIA
 
 // ✅ MÉTRICAS GERAIS COMPATÍVEIS COM TODOS OS COMPONENTES
 export interface MetricasGerais {
@@ -66,12 +66,14 @@ export interface ObraUnificada {
   fiscalizacao: {
     tarefas: TaskData[]
     progressoFornecimentos: number
+    progressoMedio: number  // ✅ ADICIONADO PARA CURVATENDENCIA
     tarefasConcluidas?: number
     totalTarefas?: number
   }
   execucao: {
     tarefas: TaskData[]
     progressoExecucao: number
+    progressoMedio: number  // ✅ ADICIONADO PARA CURVATENDENCIA
     tarefasConcluidas?: number
     totalTarefas?: number
   }
@@ -124,9 +126,4 @@ export interface TaskData {
   'Coordenada'?: string | null
   'Orçamento (R$)'?: number | null // 💰 DADOS FINANCEIROS
   '_aba'?: string
-  // ✅ Propriedades adicionais calculadas
-  tarefasConcluidas?: number
-  totalTarefas?: number
-  progressoFornecimentos?: number
-  progressoExecucao?: number
 }
