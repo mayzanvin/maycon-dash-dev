@@ -1,4 +1,4 @@
-// src/utils/excelProcessor.ts - CORREÇÃO ESPECÍFICA DOS TIPOS
+// src/utils/excelProcessor.ts - CORREÇÃO DOS PROBLEMAS DE TIPAGEM
 import * as XLSX from 'xlsx'
 import { DashboardData, BaseObraData, ExcelData, BaseInvestimentoData } from '@/types/obra'
 
@@ -9,7 +9,8 @@ export class ExcelProcessor {
     
     try {
       const dashboardData = await this.processarBaseObras(caminhoArquivo)
-      const investimentos = await this.processarBaseInvestimento('/BaseInvestimento2025.xlsx')
+      // 🎯 MUDANÇA: Usar nova função que busca por ano
+      const investimentos = await this.processarBaseInvestimentoPorAno('/BaseInvestimento.xlsx')
       
       const resultado: DashboardData = {
         ...dashboardData,
@@ -142,7 +143,7 @@ export class ExcelProcessor {
             EDT: this.getStringValue(rowData[0]) || `${sheetName}_${row}`,
             Nome_da_Tarefa: this.getStringValue(rowData[1]) || '',
             N_vel: this.getNumberValue(rowData[2]) || 0,
-            Resumo_pai: this.getStringValue(rowData[3]) || undefined, // ✅ CORRIGIDO: undefined em vez de null
+            Resumo_pai: this.getStringValue(rowData[3]) || undefined,
             Marco: this.getStringValue(rowData[4]) || null,
             Data_In_cio: this.processDate(rowData[5]) || '',
             Data_T_rmino: this.processDate(rowData[6]) || '',
@@ -266,59 +267,156 @@ export class ExcelProcessor {
     return ''
   }
   
-  // 💰 PROCESSAR BASEINVESTIMENTO2025.XLSX
-  private static async processarBaseInvestimento(caminhoArquivo: string): Promise<BaseInvestimentoData[]> {
-    console.log('💰 Carregando BaseInvestimento2025.xlsx...')
+  // 🎯 FUNÇÃO CORRIGIDA: PROCESSAR BASEINVESTIMENTO.XLSX COM TIPAGEM FLEXÍVEL
+  private static async processarBaseInvestimentoPorAno(caminhoArquivo: string): Promise<BaseInvestimentoData[]> {
+    console.log('💰 === LENDO ARQUIVO REAL: BaseInvestimento.xlsx ===')
     
     try {
+      // 1️⃣ CARREGAR ARQUIVO REAL
       const response = await fetch(caminhoArquivo)
       if (!response.ok) {
-        console.log('⚠️ BaseInvestimento2025.xlsx não encontrado')
-        return []
+        console.log(`⚠️ ${caminhoArquivo} não encontrado - usando dados de backup`)
+        return this.getDadosBackup()
       }
       
       const arrayBuffer = await response.arrayBuffer()
       const workbook = XLSX.read(arrayBuffer, { type: 'array' })
       
-      const firstSheet = workbook.SheetNames[0]
-      const worksheet = workbook.Sheets[firstSheet]
+      console.log('📋 Abas disponíveis:', workbook.SheetNames)
+      
+      // 2️⃣ BUSCAR ABA "2025" DE FORMA FLEXÍVEL
+      const anoAtual = new Date().getFullYear().toString()
+      let nomeAba: string | undefined = workbook.SheetNames.find(nome => 
+        nome === anoAtual || 
+        nome === '2025' || 
+        nome.includes(anoAtual) || 
+        nome.includes('2025')
+      )
+      
+      if (!nomeAba) {
+        nomeAba = workbook.SheetNames[0]
+        console.log(`⚠️ Aba do ano ${anoAtual} não encontrada, usando: "${nomeAba}"`)
+      } else {
+        console.log(`✅ Aba encontrada: "${nomeAba}"`)
+      }
+      
+      // 3️⃣ PROCESSAR ABA - CORRIGIDO
+      if (!nomeAba) {
+        console.log('❌ Nenhuma aba válida encontrada')
+        return this.getDadosBackup()
+      }
+      
+      const worksheet = workbook.Sheets[nomeAba]
+      if (!worksheet) {
+        console.log('❌ Worksheet não encontrada')
+        return this.getDadosBackup()
+      }
       
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
         header: 1,
-        defval: null
+        defval: null,
+        raw: false
       }) as any[][]
       
       if (jsonData.length < 2) {
-        console.log('⚠️ BaseInvestimento vazio')
-        return []
+        console.log('⚠️ Aba vazia - usando dados de backup')
+        return this.getDadosBackup()
       }
       
-      const headers = jsonData[0]
-      console.log('💰 Headers BaseInvestimento:', headers)
+      console.log('📋 Headers:', jsonData[0])
+      console.log(`📊 Processando ${jsonData.length - 1} linhas de dados`)
       
+      // 4️⃣ EXTRAIR DADOS REAIS
       const investimentos: BaseInvestimentoData[] = []
       
       for (let i = 1; i < jsonData.length; i++) {
         const row = jsonData[i]
         
-        const investimento: BaseInvestimentoData = {
-          ID_Projeto: String(row[0] || ''),
-          ProgramaOrcamentario: String(row[1] || ''),
-          Descricao: String(row[2] || ''),
-          ValorAprovado: Number(row[3]) || 0
+        if (!row || row.length < 4) continue
+        
+        const idProjeto = String(row[0] || '').trim()
+        const programa = String(row[1] || '').trim()
+        const descricao = String(row[2] || '').trim()
+        const valorBruto = row[3]
+        
+        // Converter valor para número
+        let valorAprovado = 0
+        if (typeof valorBruto === 'number') {
+          valorAprovado = valorBruto
+        } else if (typeof valorBruto === 'string') {
+          const valorLimpo = valorBruto
+            .replace(/[R$\s]/g, '')
+            .replace(/\./g, '')
+            .replace(',', '.')
+          valorAprovado = parseFloat(valorLimpo) || 0
         }
         
-        if (investimento.ID_Projeto && investimento.ValorAprovado > 0) {
+        if (idProjeto && valorAprovado > 0) {
+          const investimento: BaseInvestimentoData = {
+            ID_Projeto: idProjeto,
+            ProgramaOrcamentario: programa,
+            Descricao: descricao || 'Sem descrição',
+            ValorAprovado: valorAprovado
+          }
+          
           investimentos.push(investimento)
+          
+          // Debug dos primeiros registros
+          if (investimentos.length <= 5) {
+            console.log(`💰 ${investimentos.length}. "${idProjeto}" = R$ ${valorAprovado.toLocaleString()}`)
+          }
         }
       }
       
-      console.log(`💰 ${investimentos.length} investimentos carregados`)
+      console.log(`✅ SUCESSO: ${investimentos.length} investimentos carregados do arquivo real`)
       return investimentos
       
     } catch (error) {
-      console.log('⚠️ Erro ao carregar BaseInvestimento:', error)
-      return []
+      console.log('❌ Erro ao ler arquivo real:', error)
+      console.log('📦 Usando dados de backup')
+      return this.getDadosBackup()
     }
+  }
+  
+  // 🔒 DADOS DE BACKUP (caso o arquivo não funcione)
+  private static getDadosBackup(): BaseInvestimentoData[] {
+    return [
+      {
+        ID_Projeto: 'DTE-02',
+        ProgramaOrcamentario: 'R200_DTE0001',
+        Descricao: 'LD - Construção LD PV-CE para SE Paraviana 69kV, 11km',
+        ValorAprovado: 13558526.542
+      },
+      {
+        ID_Projeto: 'DTE-28',
+        ProgramaOrcamentario: 'R200_DTE0003', 
+        Descricao: 'SED - Ampliação SECE - 1 EL 69KV - LD PVCE C1 69KV',
+        ValorAprovado: 3981419.566
+      },
+      {
+        ID_Projeto: 'DTE-29',
+        ProgramaOrcamentario: 'R200_DTE0004',
+        Descricao: 'SED - Construção da SE Paraviana - 1EL 69kV, 2TR 69/13,8kV',
+        ValorAprovado: 22976890.393
+      },
+      {
+        ID_Projeto: 'DTE-31',
+        ProgramaOrcamentario: 'R200_DTE0020',
+        Descricao: 'SED - Retrofit 87L (implementar proteção de linha)',
+        ValorAprovado: 387532
+      },
+      {
+        ID_Projeto: 'DTE-24',
+        ProgramaOrcamentario: 'R200_DTE0010',
+        Descricao: 'SED - Ampliação da SE Rorainópolis - 1 TR 69/34,5kV',
+        ValorAprovado: 14183070.659
+      },
+      {
+        ID_Projeto: 'DTE-27',
+        ProgramaOrcamentario: 'R200_DTE0013',
+        Descricao: 'SED - Ampliação SESC 69/34,5/13,8 kV',
+        ValorAprovado: 6455044.657
+      }
+    ]
   }
 }

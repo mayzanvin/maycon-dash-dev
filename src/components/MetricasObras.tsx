@@ -548,5 +548,4 @@ const MetricasObras: React.FC<MetricasObrasProps> = ({ metricas }) => {
     </div>
   )
 }
-
-export default MetricasObras
+export default MetricasObras;

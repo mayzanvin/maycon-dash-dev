@@ -1,3 +1,5 @@
+// src/components/ListaObrasUnificadas.tsx - CÓDIGO COMPLETO COM FUNÇÕES INLINE
+
 import { ObraUnificada } from '@/types/obra-unificada'
 import { Building2, Users, Wrench, Target, TrendingUp, DollarSign } from 'lucide-react'
 
@@ -8,6 +10,27 @@ interface ListaObrasUnificadasProps {
 }
 
 const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, showAll, onObraClick }) => {
+  // 💰 FUNÇÕES DE FORMATAÇÃO BRASILEIRA INLINE
+  const formatarMoedaBR = (valor: number): string => {
+    if (typeof valor !== 'number' || isNaN(valor)) {
+      return 'R$ 0,00'
+    }
+    
+    return valor.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })
+  }
+
+  const formatarOrcamentoAprovado = (valor: number, correlacaoEncontrada: boolean): string => {
+    if (!correlacaoEncontrada || valor === 0) {
+      return 'Não encontrado'
+    }
+    return formatarMoedaBR(valor)
+  }
+
   // Cores da Roraima Energia
   const coresRoraima = {
     azul: '#0EA5E9',
@@ -71,16 +94,6 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
     return 'Crítico'
   }
 
-  // 💰 FORMATAÇÃO DE VALORES
-  const formatarMoeda = (valor: number) => {
-    if (valor >= 1000000) {
-      return `R$ ${(valor / 1000000).toFixed(1)}M`
-    } else if (valor >= 1000) {
-      return `R$ ${(valor / 1000).toFixed(0)}k`
-    }
-    return `R$ ${valor.toLocaleString()}`
-  }
-
   return (
     <div style={{
       backgroundColor: '#ffffff',
@@ -112,61 +125,48 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
           <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
           <path d="M9 9h6M9 13h6M9 17h3"/>
         </svg>
-        RESUMO DAS OBRAS {showAll ? `(${obras.length} OBRAS)` : '(OBRA SELECIONADA)'} - FÍSICO + FINANCEIRO
+        RESUMO DAS OBRAS {showAll ? `(${obras.length} OBRAS)` : `(${Math.min(obras.length, 6)} DE ${obras.length})`}
       </h2>
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))',
-        gap: '20px'
+        gridTemplateColumns: 'repeat(auto-fill, minmax(420px, 1fr))',
+        gap: '24px',
+        justifyItems: 'stretch'
       }}>
-        {obras.map((obra) => (
+        {(showAll ? obras : obras.slice(0, 6)).map((obra, index) => (
           <div
             key={obra.codigo}
             onClick={() => onObraClick(obra)}
             style={{
               backgroundColor: '#ffffff',
-              borderRadius: '12px',
-              padding: '24px',
+              borderRadius: '16px',
+              padding: '20px',
               border: '2px solid #e2e8f0',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
-              position: 'relative'
+              position: 'relative',
+              overflow: 'hidden'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-4px)'
-              e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.15)'
+              e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)'
               e.currentTarget.style.borderColor = coresRoraima.laranja
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)'
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.08)'
               e.currentTarget.style.borderColor = '#e2e8f0'
             }}
           >
-            {/* Borda superior colorida */}
-            <div style={{
-              position: 'absolute',
-              top: '0',
-              left: '0',
-              right: '0',
-              height: '4px',
-              background: `linear-gradient(90deg, ${coresRoraima.azul}, ${coresRoraima.laranja})`,
-              borderRadius: '12px 12px 0 0'
-            }} />
-
             {/* Header da obra */}
-            <div style={{
-              marginBottom: '16px',
-              marginTop: '8px'
-            }}>
-              {/* Título da obra */}
+            <div style={{ marginBottom: '16px' }}>
               <h3 style={{
-                fontSize: '18px',
-                fontWeight: '700',
                 color: coresRoraima.preto,
-                marginBottom: '8px',
+                fontSize: '16px',
+                fontWeight: '700',
+                margin: '0 0 8px 0',
                 lineHeight: '1.4',
                 wordWrap: 'break-word',
                 fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
@@ -220,10 +220,9 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
               gap: '16px',
               marginBottom: '20px'
             }}>
-              {/* Progresso Geral */}
               <div style={{
-                backgroundColor: '#eff6ff',
-                border: `1px solid ${coresRoraima.azul}`,
+                backgroundColor: obra.progressoGeral === 100 ? '#f0fdf4' : obra.progressoGeral > 0 ? '#eff6ff' : '#fef2f2',
+                border: `1px solid ${obra.progressoGeral === 100 ? coresRoraima.verde : obra.progressoGeral > 0 ? coresRoraima.azul : coresRoraima.vermelho}`,
                 borderRadius: '8px',
                 padding: '12px'
               }}>
@@ -231,7 +230,7 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
                   <TrendingUp style={{ 
                     width: '16px', 
                     height: '16px', 
-                    color: coresRoraima.azul,
+                    color: obra.progressoGeral === 100 ? coresRoraima.verde : obra.progressoGeral > 0 ? coresRoraima.azul : coresRoraima.vermelho,
                     marginRight: '6px'
                   }} />
                   <span style={{ 
@@ -243,33 +242,16 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
                 <div style={{ 
                   fontSize: '22px', 
                   fontWeight: 'bold', 
-                  color: coresRoraima.azul,
+                  color: obra.progressoGeral === 100 ? coresRoraima.verde : obra.progressoGeral > 0 ? coresRoraima.azul : coresRoraima.vermelho,
                   fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
                 }}>
-                  {obra.metricas.progressoGeral}%
-                </div>
-                <div style={{
-                  width: '100%',
-                  height: '4px',
-                  backgroundColor: '#dbeafe',
-                  borderRadius: '2px',
-                  marginTop: '6px',
-                  overflow: 'hidden'
-                }}>
-                  <div style={{
-                    width: `${obra.metricas.progressoGeral}%`,
-                    height: '100%',
-                    backgroundColor: coresRoraima.azul,
-                    borderRadius: '2px',
-                    transition: 'width 0.5s ease'
-                  }} />
+                  {obra.progressoGeral}%
                 </div>
               </div>
 
-              {/* Avanço Físico */}
               <div style={{
-                backgroundColor: '#f0fdf4',
-                border: `1px solid ${coresRoraima.verde}`,
+                backgroundColor: obra.avancooFisico === 100 ? '#f0fdf4' : obra.avancooFisico > 0 ? '#ecfdf5' : '#fef2f2',
+                border: `1px solid ${obra.avancooFisico === 100 ? coresRoraima.verde : obra.avancooFisico > 0 ? coresRoraima.verde : coresRoraima.vermelho}`,
                 borderRadius: '8px',
                 padding: '12px'
               }}>
@@ -277,7 +259,7 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
                   <Target style={{ 
                     width: '16px', 
                     height: '16px', 
-                    color: coresRoraima.verde,
+                    color: obra.avancooFisico === 100 ? coresRoraima.verde : obra.avancooFisico > 0 ? coresRoraima.verde : coresRoraima.vermelho,
                     marginRight: '6px'
                   }} />
                   <span style={{ 
@@ -289,32 +271,24 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
                 <div style={{ 
                   fontSize: '22px', 
                   fontWeight: 'bold', 
-                  color: coresRoraima.verde,
+                  color: obra.avancooFisico === 100 ? coresRoraima.verde : obra.avancooFisico > 0 ? coresRoraima.verde : coresRoraima.vermelho,
                   fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
                 }}>
-                  {obra.metricas.avancooFisico}%
+                  {obra.avancooFisico}%
                 </div>
-                <div style={{
-                  width: '100%',
-                  height: '4px',
-                  backgroundColor: '#dcfce7',
-                  borderRadius: '2px',
-                  marginTop: '6px',
-                  overflow: 'hidden'
+                <div style={{ 
+                  fontSize: '11px', 
+                  color: coresRoraima.cinza,
+                  fontWeight: '600',
+                  marginTop: '2px'
                 }}>
-                  <div style={{
-                    width: `${obra.metricas.avancooFisico}%`,
-                    height: '100%',
-                    backgroundColor: coresRoraima.verde,
-                    borderRadius: '2px',
-                    transition: 'width 0.5s ease'
-                  }} />
+                  {obra.temEnergizacao ? 'Com Energização' : 'Sem Energização'}
                 </div>
               </div>
 
-              {/* 💰 NOVA COLUNA - EFICIÊNCIA FINANCEIRA */}
               <div style={{
-                backgroundColor: getCorEficiencia(obra.dadosFinanceiros.eficienciaExecucao) === coresRoraima.verde ? '#f0fdf4' :
+                backgroundColor: getCorEficiencia(obra.dadosFinanceiros.eficienciaExecucao) === coresRoraima.verde ? 
+                                '#f0fdf4' :
                                 getCorEficiencia(obra.dadosFinanceiros.eficienciaExecucao) === coresRoraima.amarelo ? '#fefce8' : '#fef2f2',
                 border: `1px solid ${getCorEficiencia(obra.dadosFinanceiros.eficienciaExecucao)}`,
                 borderRadius: '8px',
@@ -352,7 +326,7 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
               </div>
             </div>
 
-            {/* 💰 SEÇÃO FINANCEIRA DETALHADA */}
+            {/* 💰 SEÇÃO FINANCEIRA DETALHADA - CORRIGIDA COM FUNÇÕES INLINE */}
             <div style={{
               backgroundColor: '#f8fafc',
               borderRadius: '8px',
@@ -370,7 +344,7 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
                 gap: '6px'
               }}>
                 <DollarSign style={{ width: '16px', height: '16px', color: coresRoraima.laranja }} />
-                Informações Financeiras
+                💰 Informações Financeiras
               </h4>
               
               <div style={{
@@ -382,13 +356,13 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
                 <div>
                   <div style={{ color: coresRoraima.cinza, marginBottom: '2px' }}>Orçamento Total:</div>
                   <div style={{ fontWeight: '600', color: coresRoraima.preto }}>
-                    {formatarMoeda(obra.dadosFinanceiros.orcamentoTotal)}
+                    {formatarMoedaBR(obra.dadosFinanceiros.orcamentoTotal)}
                   </div>
                 </div>
                 <div>
                   <div style={{ color: coresRoraima.cinza, marginBottom: '2px' }}>Valor Realizado:</div>
                   <div style={{ fontWeight: '600', color: coresRoraima.azul }}>
-                    {formatarMoeda(obra.dadosFinanceiros.valorRealizado)}
+                    {formatarMoedaBR(obra.dadosFinanceiros.valorRealizado)}
                   </div>
                 </div>
                 <div>
@@ -397,10 +371,7 @@ const ListaObrasUnificadas: React.FC<ListaObrasUnificadasProps> = ({ obras, show
                     fontWeight: '600', 
                     color: obra.dadosFinanceiros.corelacionEncontrada ? coresRoraima.verde : coresRoraima.cinza 
                   }}>
-                    {obra.dadosFinanceiros.corelacionEncontrada ? 
-                      formatarMoeda(obra.dadosFinanceiros.orcamentoAprovado) : 
-                      'Não encontrado'
-                    }
+                    {formatarOrcamentoAprovado(obra.dadosFinanceiros.orcamentoAprovado, obra.dadosFinanceiros.corelacionEncontrada)}
                   </div>
                 </div>
                 <div>

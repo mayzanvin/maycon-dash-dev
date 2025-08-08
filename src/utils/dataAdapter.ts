@@ -128,8 +128,9 @@ export class DataAdapter {
       const tarefasFiscalizacaoFormatadas: TaskData[] = tarefasF.map(t => this.formatarTarefaParaTaskData(t))
       const tarefasExecucaoFormatadas: TaskData[] = tarefasE.map(t => this.formatarTarefaParaTaskData(t))
       
-      // 💰 DADOS FINANCEIROS CORRIGIDOS
-      const dadosFinanceiros = this.calcularDadosFinanceiros(todasTarefas, nomeBase, investimentos, progressoGeral)
+      // 💰 DADOS FINANCEIROS CORRIGIDOS (USAR CÓDIGO DTE)
+      const codigoDTE = this.extrairCodigoDTE(tarefasF, tarefasE, nomeBase)
+      const dadosFinanceiros = this.calcularDadosFinanceiros(todasTarefas, codigoDTE, investimentos, progressoGeral)
       
       // ✅ DETECTAR ENERGIZAÇÃO
       const temEnergizacao = this.detectarEnergizacao(tarefasF, tarefasE)
@@ -202,14 +203,13 @@ export class DataAdapter {
     const orcamentoTarefas = this.calcularOrcamentoTotal(todasTarefas)
     console.log(`   💰 Orçamento das tarefas: R$ ${orcamentoTarefas.toLocaleString()}`)
     
-    // 2️⃣ ORÇAMENTO APROVADO (INVESTIMENTOS)
+    // 2️⃣ ORÇAMENTO APROVADO (INVESTIMENTOS) - FUNÇÃO CORRIGIDA
     const orcamentoAprovado = this.buscarOrcamentoAprovado(nomeBase, investimentos)
     console.log(`   💰 Orçamento aprovado: R$ ${orcamentoAprovado.toLocaleString()}`)
     
-    // 3️⃣ ESCOLHER ORÇAMENTO FINAL (MAIS CONSERVADOR)
+    // 3️⃣ ESCOLHER ORÇAMENTO FINAL
     let orcamentoFinal: number
     if (orcamentoAprovado > 0 && orcamentoTarefas > 0) {
-      // Se ambos existem, usar o menor (mais conservador)
       orcamentoFinal = Math.min(orcamentoAprovado, orcamentoTarefas)
       console.log(`   ⚖️ Usando o menor orçamento (conservador): R$ ${orcamentoFinal.toLocaleString()}`)
     } else if (orcamentoAprovado > 0) {
@@ -219,7 +219,6 @@ export class DataAdapter {
       orcamentoFinal = orcamentoTarefas
       console.log(`   📊 Usando orçamento das tarefas`)
     } else {
-      // 🎯 ORÇAMENTO ESTIMADO BASEADO EM PADRÕES
       orcamentoFinal = this.estimarOrcamento(nomeBase, todasTarefas.length)
       console.log(`   🔮 Orçamento estimado: R$ ${orcamentoFinal.toLocaleString()}`)
     }
@@ -295,7 +294,7 @@ export class DataAdapter {
     return Math.round((orcamentoTotal * progressoGeral) / 100)
   }
 
-  // ✅ EXTRAIR NOME REAL DA OBRA CORRETAMENTE
+  // ✅ EXTRAIR NOME REAL DA OBRA CORRETAMENTE (REVERTER PARA VERSÃO ORIGINAL)
   private static extrairNomeObra(tarefasF: BaseObraData[], tarefasE: BaseObraData[], nomeBase: string): string {
     const todasTarefas = [...tarefasF, ...tarefasE]
     
@@ -323,7 +322,9 @@ export class DataAdapter {
       'SEPV_RRE-095-764000-1': 'Construção da SE Paraviana 69/13,8 kV',
       'SESC_RRE-098-764000-3': 'Ampliação SE Sucuba 69/34,5 kV',
       'SERN_RRE-105-764000-1': 'Adequação 87L SE Boa Vista (Eletronorte)',
-      'CEPV_RRE-095-764000-1': 'Estudos elétricos de demanda do SEP Aprovado',
+      'CEPV_RRE-3995-764000-1': 'Implantação LD-CEPV-01 69 kV',
+      'R87L_RRE-VAR-764000-2': 'Retrofit 87L SEBV 500/230/69 kV',
+      'SECE_RRE-093-764005-1': 'Ampliação SESC 69/34,5/13,8 kV',
       'DTE02-001': 'Implantação LD-CEPV-01 69 kV',
       'DTE31-020': 'Retrofit 87L SEBV 500/230/69 kV',
       'DTE28-003': 'Ampliação SESC 69/34,5/13,8 kV',
@@ -367,6 +368,70 @@ export class DataAdapter {
     return nomeFormatado
   }
 
+  // 🎯 NOVA FUNÇÃO: EXTRAIR CÓDIGO DTE PARA BUSCA FINANCEIRA (CORRIGIDA)
+  private static extrairCodigoDTE(tarefasF: BaseObraData[], tarefasE: BaseObraData[], nomeBase: string): string {
+    const todasTarefas = [...tarefasF, ...tarefasE]
+    
+    console.log(`🔍 === EXTRAINDO CÓDIGO DTE: ${nomeBase} ===`)
+    
+    // 1️⃣ BUSCAR NA TAREFA EDT 0 (TAREFA-RESUMO MÃE)
+    const tarefaEDT0 = todasTarefas.find(t => 
+      Number(t.N_vel) === 0 || 
+      String(t.EDT).trim() === '0' ||
+      String(t.EDT).trim() === '' ||
+      Number(t.N_vel) === 1  // Incluir nível 1 também
+    )
+    
+    if (tarefaEDT0) {
+      console.log(`   🎯 Tarefa EDT 0/1 encontrada: "${tarefaEDT0.Nome_da_Tarefa}"`)
+      
+      const nomeTarefa = String(tarefaEDT0.Nome_da_Tarefa || '').trim()
+      const match = nomeTarefa.match(/DTE\d+-\d+/i)
+      if (match) {
+        const codigo = match[0].toUpperCase()
+        console.log(`   ✅ CÓDIGO DTE ENCONTRADO: "${codigo}"`)
+        return codigo
+      }
+    }
+    
+    // 2️⃣ BUSCAR EM TODAS AS TAREFAS
+    for (const tarefa of todasTarefas) {
+      const nomeTarefa = String(tarefa.Nome_da_Tarefa || '').trim()
+      const edt = String(tarefa.EDT || '').trim()
+      const resumo = String(tarefa.Resumo_pai || '').trim()
+      
+      // Buscar DTE em qualquer campo
+      const campos = [nomeTarefa, edt, resumo]
+      for (const campo of campos) {
+        const match = campo.match(/DTE\d+-\d+/i)
+        if (match) {
+          const codigo = match[0].toUpperCase()
+          console.log(`   ✅ CÓDIGO DTE ENCONTRADO em "${campo}": "${codigo}"`)
+          return codigo
+        }
+      }
+    }
+    
+    // 3️⃣ MAPEAMENTO CORRIGIDO POR NOME DA ABA
+    const mapeamento: Record<string, string> = {
+      'CEPV_RRE-3995-764000-1': 'DTE02-001',
+      'R87L_RRE-VAR-764000-2': 'DTE31-020',
+      'SECE_RRE-093-764005-1': 'DTE28-003',
+      'SEPV_RRE-095-764000-1': 'DTE29-004',
+      'SERN_RRE-105-764000-1': 'DTE24-010',
+      'SESC_RRE-098-764000-3': 'DTE27-013'  // ✅ CORRIGIDO: era DTE-27-013
+    }
+    
+    const codigoMapeado = mapeamento[nomeBase]
+    if (codigoMapeado) {
+      console.log(`   ✅ CÓDIGO MAPEADO: "${codigoMapeado}"`)
+      return codigoMapeado
+    }
+    
+    console.log(`   ❌ Código DTE não encontrado, usando nome da aba: "${nomeBase}"`)
+    return nomeBase
+  }
+
   // ✅ FORMATAÇÃO PARA TASKDATA
   private static formatarTarefaParaTaskData(tarefa: BaseObraData): TaskData {
     return {
@@ -390,95 +455,82 @@ export class DataAdapter {
     }
   }
 
-  // 💰 BUSCAR ORÇAMENTO APROVADO
+  // 💰 FUNÇÃO CORRIGIDA: BUSCAR ORÇAMENTO APROVADO
   private static buscarOrcamentoAprovado(nomeObra: string, investimentos: BaseInvestimentoData[]): number {
     if (!investimentos || investimentos.length === 0) {
       console.log(`💰 Nenhum investimento disponível para ${nomeObra}`)
       return 0
     }
     
-    console.log(`💰 Buscando investimento para: ${nomeObra}`)
+    console.log(`💰 Buscando investimento para: "${nomeObra}"`)
     
-    // 🎯 CORREÇÃO ESPECÍFICA PARA SESC (DTE28-003)
-    if (nomeObra.toLowerCase().includes('sesc') || nomeObra.toLowerCase().includes('seccionadora')) {
-      console.log(`🎯 Obra SESC detectada - buscando por palavras-chave específicas`)
-      
-      const palavrasChaveSESC = ['sesc', 'seccionadora', 'eletrocentro', 'subestação']
-      for (const palavra of palavrasChaveSESC) {
-        const investimento = investimentos.find(inv => 
-          inv.Descricao.toLowerCase().includes(palavra.toLowerCase())
-        )
-        if (investimento) {
-          const valor = Number(investimento.ValorAprovado) || 0
-          console.log(`✅ SESC: Encontrado por "${palavra}" = R$ ${valor.toLocaleString()}`)
-          return valor
-        }
-      }
-      console.log(`❌ SESC: Nenhuma palavra-chave encontrada nos investimentos`)
-    }
-    
-    // 🎯 CORREÇÃO ESPECÍFICA PARA R87L (DTE31-020)
-    if (nomeObra.toLowerCase().includes('r87l') || nomeObra.toLowerCase().includes('retrofit') || 
-        nomeObra.toLowerCase().includes('sebv') || nomeObra.toLowerCase().includes('boa vista')) {
-      console.log(`🎯 Obra R87L detectada - buscando por palavras-chave específicas`)
-      
-      const palavrasChaveR87L = ['r87l', '87l', 'retrofit', 'sebv', 'boa vista']
-      for (const palavra of palavrasChaveR87L) {
-        const investimento = investimentos.find(inv => 
-          inv.Descricao.toLowerCase().includes(palavra.toLowerCase())
-        )
-        if (investimento) {
-          const valor = Number(investimento.ValorAprovado) || 0
-          console.log(`✅ R87L: Encontrado por "${palavra}" = R$ ${valor.toLocaleString()}`)
-          return valor
-        }
-      }
-      console.log(`❌ R87L: Nenhuma palavra-chave encontrada nos investimentos`)
-    }
-    
+    // 🎯 EXTRAIR PARTES DO NOME DA OBRA
     const match = nomeObra.match(/^([A-Z]+)(\d+)-(\d+)/)
     
     if (!match) {
-      const palavrasChave = ['SESC', 'SEPV', 'CEPV', 'SERN', 'SECE', 'R87L']
-      for (const palavra of palavrasChave) {
-        if (nomeObra.toUpperCase().includes(palavra)) {
-          const investimento = investimentos.find(inv => 
-            inv.Descricao.toUpperCase().includes(palavra)
-          )
-          if (investimento) {
-            const valor = Number(investimento.ValorAprovado) || 0
-            console.log(`✅ Encontrado por palavra-chave "${palavra}" = R$ ${valor.toLocaleString()}`)
-            return valor
-          }
-        }
-      }
-      console.log(`❌ Nenhuma palavra-chave encontrada para: ${nomeObra}`)
+      console.log(`   ❌ Formato da obra não reconhecido: "${nomeObra}"`)
       return 0
     }
     
-    const [, prefixo, numero, codigo] = match
+    const [_, prefixo, numero, codigo] = match
+    console.log(`   🎯 Partes extraídas: prefixo="${prefixo}", numero="${numero}", codigo="${codigo}"`)
+    
+    // 🔍 PADRÕES DE BUSCA BASEADOS NOS DADOS REAIS DO BaseInvestimento.xlsx
     const padroesBusca = [
-      `${prefixo}${numero}-${codigo}`,
-      `${prefixo}${numero}.${codigo}`,
-      `${prefixo} ${numero}-${codigo}`,
-      `${prefixo} ${numero}.${codigo}`,
-      `${prefixo}${numero}`,
-      `${numero}-${codigo}`,
-      `${numero}.${codigo}`
+      `${prefixo}-${numero}`,        // "DTE-02"  (formato exato do BaseInvestimento)
+      `${prefixo}${numero}`,         // "DTE02"   (sem hífen)
+      `${prefixo} ${numero}`,        // "DTE 02"  (com espaço)
+      numero                         // "02"      (apenas número)
     ]
     
+    console.log(`   🔍 Padrões de busca:`, padroesBusca)
+    
+    // 🎯 BUSCAR CORRELAÇÃO
     for (const padrao of padroesBusca) {
-      const investimento = investimentos.find(inv => 
-        inv.ID_Projeto.includes(padrao) || inv.Descricao.includes(padrao)
-      )
-      if (investimento) {
-        const valor = Number(investimento.ValorAprovado) || 0
-        console.log(`✅ Encontrado por padrão "${padrao}" = R$ ${valor.toLocaleString()}`)
+      const investimentoEncontrado = investimentos.find(inv => {
+        const idInvestimento = inv.ID_Projeto.toUpperCase().trim()
+        const padraoUpper = padrao.toUpperCase()
+        
+        // Busca exata
+        if (idInvestimento === padraoUpper) {
+          return true
+        }
+        
+        // Busca flexível (contém)
+        if (idInvestimento.includes(padraoUpper) || padraoUpper.includes(idInvestimento)) {
+          return true
+        }
+        
+        return false
+      })
+      
+      if (investimentoEncontrado) {
+        const valor = Number(investimentoEncontrado.ValorAprovado) || 0
+        console.log(`   ✅ ENCONTRADO por padrão "${padrao}"`)
+        console.log(`   📋 ID Investimento: "${investimentoEncontrado.ID_Projeto}"`)
+        console.log(`   📝 Descrição: "${investimentoEncontrado.Descricao.substring(0, 50)}..."`)
+        console.log(`   💰 Valor: R$ ${valor.toLocaleString()}`)
         return valor
       }
     }
     
-    console.log(`❌ Investimento não encontrado para: ${nomeObra}`)
+    // 🔍 BUSCA ALTERNATIVA POR NÚMERO APENAS (para casos especiais)
+    const numeroLimpo = numero.replace(/^0+/, '') // Remove zeros à esquerda
+    const investimentoNumerico = investimentos.find(inv => {
+      const id = inv.ID_Projeto.toUpperCase()
+      return id.includes(`-${numero}`) || id.includes(`-${numeroLimpo}`) || id.endsWith(numero)
+    })
+    
+    if (investimentoNumerico) {
+      const valor = Number(investimentoNumerico.ValorAprovado) || 0
+      console.log(`   ✅ ENCONTRADO por busca numérica "${numero}"`)
+      console.log(`   📋 ID Investimento: "${investimentoNumerico.ID_Projeto}"`)
+      console.log(`   💰 Valor: R$ ${valor.toLocaleString()}`)
+      return valor
+    }
+    
+    console.log(`   ❌ Investimento não encontrado para: "${nomeObra}"`)
+    console.log(`   📋 IDs disponíveis:`, investimentos.map(i => i.ID_Projeto).join(', '))
     return 0
   }
   

@@ -1,8 +1,8 @@
-// src/components/ModalDetalhesObra.tsx - VERSÃO RICA SEM CURVATENDENCIA
+// src/components/ModalDetalhesObra.tsx - CORREÇÃO MÍNIMA: APENAS FORMATAÇÃO FINANCEIRA
 import { useEffect } from 'react'
 import { ObraUnificada } from '@/types/obra-unificada'
 import { X, Calendar, TrendingUp, AlertTriangle, CheckCircle, Building2, Users, Wrench } from 'lucide-react'
-// import CurvaTendencia from './CurvaTendencia' // TEMPORARIAMENTE REMOVIDO
+import { formatarMoedaBR } from '@/utils/formatacaoMonetaria'
 
 interface ModalDetalhesObraProps {
   obra: ObraUnificada | null
@@ -334,7 +334,7 @@ const ModalDetalhesObra: React.FC<ModalDetalhesObraProps> = ({ obra, onClose }) 
             </div>
           </div>
 
-          {/* ✅ INFORMAÇÕES FINANCEIRAS MELHORADAS */}
+          {/* 💰 INFORMAÇÕES FINANCEIRAS MELHORADAS - CORREÇÃO AQUI */}
           <div style={{
             backgroundColor: '#f8fafc',
             borderRadius: '12px',
@@ -364,7 +364,7 @@ const ModalDetalhesObra: React.FC<ModalDetalhesObraProps> = ({ obra, onClose }) 
                   Orçamento Total:
                 </div>
                 <div style={{ fontSize: '16px', fontWeight: 'bold', color: coresRoraima.preto }}>
-                  R$ {obra.dadosFinanceiros.orcamentoTotal.toLocaleString()}
+                  {formatarMoedaBR(obra.dadosFinanceiros.orcamentoTotal)}
                 </div>
               </div>
               
@@ -373,7 +373,7 @@ const ModalDetalhesObra: React.FC<ModalDetalhesObraProps> = ({ obra, onClose }) 
                   Valor Realizado:
                 </div>
                 <div style={{ fontSize: '16px', fontWeight: 'bold', color: coresRoraima.azul }}>
-                  R$ {obra.dadosFinanceiros.valorRealizado.toLocaleString()}
+                  {formatarMoedaBR(obra.dadosFinanceiros.valorRealizado)}
                 </div>
               </div>
 
